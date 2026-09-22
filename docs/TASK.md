@@ -2,11 +2,12 @@
 
 ## 1. 프로젝트 초기 설정
 
-- [ ] Python 3.11 가상환경과 기본 프로젝트 디렉터리를 구성한다.
-  - 완료 기준: Python 3.11 환경에서 가상환경을 활성화하고 백엔드와 프론트엔드 소스 위치를 구분할 수 있다.
+- [ ] Python 3.11 이상 환경과 프로젝트 로컬 가상환경을 구성한다.
+  - 작업 내용: Python 3.12를 로컬 검증 권장 버전으로 사용하고 프로젝트 루트의 `.venv`에서만 개발한다. Python 3.14는 현재 프로젝트의 검증 대상에서 제외한다.
+  - 완료 기준: `py -3.12 -m venv .venv`로 가상환경을 생성하고 `.\.venv\Scripts\Activate.ps1`로 활성화할 수 있으며, `python --version`이 Python 3.12.x 또는 허용 범위인 Python 3.11 이상이다. `python -m pip --version` 경로에 `.venv`가 포함된다.
 - [ ] 필수 패키지와 의존성 파일을 준비한다.
   - 작업 내용: `fastapi`, `uvicorn`, `firebase-admin`, `openai`, `python-dotenv`를 설치하고 `requirements.txt`에 기록한다.
-  - 완료 기준: 새 가상환경에서 `requirements.txt`만으로 패키지를 설치할 수 있다.
+  - 완료 기준: 활성화된 `.venv`에서 `python -m pip install -r backend/requirements.txt`로 패키지를 설치할 수 있다.
 - [ ] 환경변수 파일 구조를 준비한다.
   - 작업 내용: `OPENAI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FRONTEND_ORIGIN`을 로컬 및 배포 환경에서 주입할 수 있게 하고, 예시 값만 포함한 `.env.example`을 작성한다.
   - 완료 기준: 실제 비밀값이 소스 코드와 Git에 포함되지 않고 `.env`가 `.gitignore`에 등록되어 있다.
@@ -14,7 +15,7 @@
 ## 2. 백엔드 기본 구조 구현
 
 - [ ] FastAPI 애플리케이션과 실행 진입점을 구현한다.
-  - 완료 기준: `uvicorn main:app --reload`로 서버가 실행되고 `GET /`이 `{"message": "AI Study Time Assistant API"}`를 반환한다.
+  - 완료 기준: 활성화된 `.venv`에서 `python -m uvicorn main:app --reload`로 서버가 실행되고 `GET /`이 `{"message": "AI Study Time Assistant API"}`를 반환한다.
 - [ ] Pydantic 요청 모델과 공통 오류 처리 구조를 구현한다.
   - 완료 기준: 필수값 누락과 잘못된 타입에 대해 검증 오류가 반환되고, 서버 오류가 사용자에게 노출할 수 있는 명확한 메시지로 처리된다.
 - [ ] CORS와 Swagger UI를 구성한다.

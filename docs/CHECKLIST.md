@@ -112,6 +112,24 @@
 
 ## 5. 배포 및 환경변수 검증
 
+- [ ] 프로젝트 루트에 로컬 가상환경 `.venv`가 생성되어 있다.
+  - 확인 방법: 프로젝트 루트에서 `Test-Path .venv`와 `Test-Path .venv\Scripts\python.exe`를 실행한다.
+  - 기대 결과: 두 명령이 모두 `True`를 반환한다.
+- [ ] PowerShell에서 프로젝트 로컬 가상환경이 활성화된다.
+  - 확인 방법: `.\.venv\Scripts\Activate.ps1`를 실행하고 PowerShell 프롬프트를 확인한다.
+  - 기대 결과: 프롬프트 앞에 `(.venv)`가 표시된다.
+- [ ] 활성화된 Python 버전이 프로젝트 정책을 만족한다.
+  - 확인 방법: 가상환경 활성화 후 `python --version`을 실행한다.
+  - 기대 결과: Python 3.11 이상이며 권장·로컬 검증 버전인 Python 3.12.x가 사용된다. Python 3.14는 검증에 사용하지 않는다.
+- [ ] pip가 전역환경이 아닌 `.venv`에 연결되어 있다.
+  - 확인 방법: 가상환경 활성화 후 `python -m pip --version`을 실행한다.
+  - 기대 결과: 출력된 pip 설치 경로에 프로젝트의 `.venv` 경로가 포함된다.
+- [ ] 시스템 기본 Python이 3.14여도 프로젝트 실행에는 사용되지 않는다.
+  - 확인 방법: `py --list`, `python --version`, `python -m pip --version` 결과를 함께 비교한다.
+  - 기대 결과: `py --list`에서 3.14가 기본값이어도 활성 프로젝트 인터프리터와 pip는 `.venv`의 Python 3.12.x 또는 허용된 Python 3.11 이상을 가리킨다.
+- [ ] `.venv`가 Git 추적 대상에서 제외된다.
+  - 확인 방법: `.gitignore`에서 `.venv/`를 확인하고 `git check-ignore -v .venv`를 실행한다.
+  - 기대 결과: `.venv/`가 ignore 규칙과 일치하며 `git status`에 가상환경 내부 파일이 표시되지 않는다.
 - [ ] Render 백엔드 배포 URL이 동작한다.
   - 확인 방법: README에 적힌 Render URL에서 `GET /`, `GET /api/health/firestore`, `POST /api/chat`을 차례로 호출한다.
   - 기대 결과: 공개 URL에서 서버, Firestore, OpenAI 기능이 정상 응답한다. 첫 요청 지연이 있다면 README의 콜드 스타트 안내와 일치한다.

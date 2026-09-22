@@ -659,13 +659,13 @@ DELETE /api/conversations/{id}
 
 | 항목 | 기술 |
 |---|---|
-| 언어 | Python 3.11 |
+| 언어 | Python 3.11 이상 권장, Python 3.12 로컬 검증, Python 3.14 검증 제외 |
 | 웹 프레임워크 | FastAPI |
 | 실행 서버 | Uvicorn |
 | 데이터 검증 | Pydantic |
 | 환경변수 관리 | python-dotenv |
-| 패키지 관리 | pip, requirements.txt |
-| 가상환경 | venv |
+| 패키지 관리 | python -m pip, requirements.txt |
+| 가상환경 | 프로젝트 루트 .venv |
 
 ---
 
@@ -1074,12 +1074,12 @@ AI 학습시간 분석 비서를 만든다.
 
 ### 기술 스택
 
-- Backend: Python 3.11, FastAPI, Uvicorn, Pydantic
+- Backend: Python 3.11 이상 권장(Python 3.12 검증, Python 3.14 제외), FastAPI, Uvicorn, Pydantic
 - Database: Firebase Firestore
 - AI: OpenAI API
 - Frontend: HTML, CSS, Vanilla JavaScript
 - Deploy: Render, Vercel
-- Environment: venv, pip, requirements.txt
+- Environment: 프로젝트 루트 .venv, python -m pip, requirements.txt
 
 ### 주요 API
 
