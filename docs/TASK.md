@@ -2,10 +2,10 @@
 
 ## 1. 프로젝트 초기 설정
 
-- [ ] Python 3.11 이상 환경과 프로젝트 로컬 가상환경을 구성한다.
+- [x] Python 3.11 이상 환경과 프로젝트 로컬 가상환경을 구성한다.
   - 작업 내용: Python 3.12를 로컬 검증 권장 버전으로 사용하고 프로젝트 루트의 `.venv`에서만 개발한다. Python 3.14는 현재 프로젝트의 검증 대상에서 제외한다.
   - 완료 기준: `py -3.12 -m venv .venv`로 가상환경을 생성하고 `.\.venv\Scripts\Activate.ps1`로 활성화할 수 있으며, `python --version`이 Python 3.12.x 또는 허용 범위인 Python 3.11 이상이다. `python -m pip --version` 경로에 `.venv`가 포함된다.
-- [ ] 필수 패키지와 의존성 파일을 준비한다.
+- [x] 필수 패키지와 의존성 파일을 준비한다.
   - 작업 내용: `fastapi`, `uvicorn`, `firebase-admin`, `openai`, `python-dotenv`를 설치하고 `requirements.txt`에 기록한다.
   - 완료 기준: 활성화된 `.venv`에서 `python -m pip install -r backend/requirements.txt`로 패키지를 설치할 수 있다.
 - [ ] 환경변수 파일 구조를 준비한다.
@@ -14,18 +14,18 @@
 
 ## 2. 백엔드 기본 구조 구현
 
-- [ ] FastAPI 애플리케이션과 실행 진입점을 구현한다.
+- [x] FastAPI 애플리케이션과 실행 진입점을 구현한다.
   - 완료 기준: 활성화된 `.venv`에서 `python -m uvicorn main:app --reload`로 서버가 실행되고 `GET /`이 `{"message": "AI Study Time Assistant API"}`를 반환한다.
-- [ ] Pydantic 요청 모델과 공통 오류 처리 구조를 구현한다.
+- [x] Pydantic 요청 모델과 공통 오류 처리 구조를 구현한다.
   - 완료 기준: 필수값 누락과 잘못된 타입에 대해 검증 오류가 반환되고, 서버 오류가 사용자에게 노출할 수 있는 명확한 메시지로 처리된다.
 - [ ] CORS와 Swagger UI를 구성한다.
   - 완료 기준: 로컬 프론트엔드 및 `FRONTEND_ORIGIN`에 설정된 Vercel 도메인의 요청이 허용되고 `/docs`에서 모든 API를 확인할 수 있다.
 
 ## 3. Firestore 연동
 
-- [ ] Firebase Admin SDK를 환경변수 기반으로 초기화한다.
+- [x] Firebase Admin SDK를 환경변수 기반으로 초기화한다.
   - 완료 기준: 서비스 계정 정보가 코드에 하드코딩되지 않고 정상 환경에서 Firestore 클라이언트가 생성된다.
-- [ ] Firestore 연결 확인 API를 구현한다.
+- [x] Firestore 연결 확인 API를 구현한다.
   - 엔드포인트: `GET /api/health/firestore`
   - 요청/응답: 별도 요청 본문 없이 `{"status": "ok", "message": "Firestore connected"}`를 반환한다.
   - 검증 기준: 정상 자격 증명에서는 성공 응답을 반환하고, 환경변수 누락 또는 연결 실패 시 원인을 확인할 수 있는 오류를 반환한다.
@@ -35,23 +35,23 @@
 
 ## 4. 학습시간 데이터 API 구현
 
-- [ ] 학습시간 등록 API를 구현한다.
+- [x] 학습시간 등록 API를 구현한다.
   - 엔드포인트: `POST /api/data`
   - 요청/응답: `{"date":"2025-01-10","value":120,"memo":"FastAPI 기초 학습"}`를 받아 생성된 `id`, `date`, `value`, `memo`를 반환한다.
   - 검증 기준: `date`는 비어 있지 않은 `YYYY-MM-DD` 형식이고 `value`는 0보다 큰 숫자여야 하며, 정상 요청은 `data` 컬렉션에 저장된다.
-- [ ] 학습시간 목록 조회 API를 구현한다.
+- [x] 학습시간 목록 조회 API를 구현한다.
   - 엔드포인트: `GET /api/data`
   - 요청/응답: 요청 본문 없이 `id`, `date`, `value`, `memo`를 포함한 배열을 반환한다.
   - 검증 기준: 저장된 데이터가 목록에 나타나고 가능하면 날짜 내림차순으로 정렬되며, 데이터가 없을 때 빈 배열 또는 안내 응답을 오류 없이 반환한다.
-- [ ] 학습시간 수정 API를 구현한다.
+- [x] 학습시간 수정 API를 구현한다.
   - 엔드포인트: `PUT /api/data/{id}`
   - 요청/응답: 수정할 `date`, `value`, `memo`를 받아 `id`와 수정된 필드를 반환한다.
   - 검증 기준: 등록 API와 같은 필드 검증을 적용하고, 수정 후 재조회 시 변경값이 표시되며, 존재하지 않는 `id`에는 적절한 오류를 반환한다.
-- [ ] 학습시간 삭제 API를 구현한다.
+- [x] 학습시간 삭제 API를 구현한다.
   - 엔드포인트: `DELETE /api/data/{id}`
   - 요청/응답: 경로의 문서 `id`를 삭제하고 `{"message":"Data deleted successfully"}`를 반환한다.
   - 검증 기준: 삭제 후 목록에서 문서가 사라지고, 존재하지 않는 `id`에는 적절한 오류를 반환한다.
-- [ ] 학습시간 요약 API를 구현한다.
+- [x] 학습시간 요약 API를 구현한다.
   - 엔드포인트: `GET /api/data/summary`
   - 요청/응답: 요청 본문 없이 `count`, `total_minutes`, `average_minutes`, `max_minutes`, `min_minutes`, `recent_7_days_total`, `recent_trend`를 반환한다.
   - 검증 기준: 저장 데이터로 각 값을 계산하고 `recent_trend`는 `increasing`, `decreasing`, `stable`, `not_enough_data` 중 하나이며, 데이터가 없을 때 `count: 0`으로 0 나누기 오류 없이 응답한다.

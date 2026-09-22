@@ -4,25 +4,25 @@
 
 ## 1. 백엔드 API 검증
 
-- [ ] 기본 상태 확인 API가 동작한다.
+- [x] 기본 상태 확인 API가 동작한다.
   - 확인 방법: 로컬 또는 Render API 주소에서 `GET /`을 호출한다.
   - 기대 결과: `{"message":"AI Study Time Assistant API"}`가 반환된다.
-- [ ] Firestore 연결 확인 API가 동작한다.
+- [x] Firestore 연결 확인 API가 동작한다.
   - 확인 방법: `GET /api/health/firestore`를 호출한다.
   - 기대 결과: `{"status":"ok","message":"Firestore connected"}`가 반환된다.
-- [ ] 학습시간 데이터를 생성할 수 있다.
+- [x] 학습시간 데이터를 생성할 수 있다.
   - 확인 방법: `POST /api/data`에 `{"date":"2025-01-10","value":120,"memo":"FastAPI 기초 학습"}`을 전송하고 반환된 `id`를 기록한다.
   - 기대 결과: 성공 응답에 `id`, `date`, `value`, `memo`가 포함되고 같은 데이터가 Firestore `data` 컬렉션에 저장된다.
-- [ ] 학습시간 데이터 목록을 조회할 수 있다.
+- [x] 학습시간 데이터 목록을 조회할 수 있다.
   - 확인 방법: `GET /api/data`를 호출하고 앞에서 생성한 `id`를 찾는다.
   - 기대 결과: 응답 배열에 해당 문서의 `id`, `date`, `value`, `memo`가 포함된다. 데이터가 없을 때는 빈 배열 또는 문서에 정의된 안내 응답을 오류 없이 반환한다.
-- [ ] 학습시간 데이터를 수정할 수 있다.
+- [x] 학습시간 데이터를 수정할 수 있다.
   - 확인 방법: 앞에서 기록한 `id`로 `PUT /api/data/{id}`에 `{"date":"2025-01-10","value":150,"memo":"FastAPI 라우팅 복습"}`을 전송한 뒤 `GET /api/data`로 다시 조회한다.
   - 기대 결과: 수정 응답과 재조회 결과의 `value`가 `150`, `memo`가 `FastAPI 라우팅 복습`으로 변경되어 있다.
-- [ ] 학습시간 요약을 조회할 수 있다.
+- [x] 학습시간 요약을 조회할 수 있다.
   - 확인 방법: 문서 기준 경로인 `GET /api/data/summary`를 호출한다.
   - 기대 결과: `count`, `total_minutes`, `average_minutes`, `max_minutes`, `min_minutes`, `recent_7_days_total`, `recent_trend`가 반환되고 `recent_trend`는 `increasing`, `decreasing`, `stable`, `not_enough_data` 중 하나이다.
-- [ ] 학습시간 데이터를 삭제할 수 있다.
+- [x] 학습시간 데이터를 삭제할 수 있다.
   - 확인 방법: 앞에서 기록한 `id`로 `DELETE /api/data/{id}`를 호출한 뒤 `GET /api/data`로 다시 조회한다.
   - 기대 결과: `{"message":"Data deleted successfully"}`가 반환되고 목록과 Firestore에서 해당 문서가 사라진다.
 - [ ] 대화 기록을 API로 직접 저장할 수 있다.
@@ -40,13 +40,15 @@
 - [ ] API 입력값과 존재하지 않는 ID가 검증된다.
   - 확인 방법: 빈 `date`, 0 이하의 `value`, 빈 AI 질문, 존재하지 않는 데이터 및 대화 ID로 각각 요청한다.
   - 기대 결과: 서버가 중단되지 않고 각 요청에 적절한 검증 또는 찾을 수 없음 오류를 반환한다.
+  - 부분 완료: 학습시간 데이터 입력값 검증과 빈 데이터 요약 처리는 확인되었지만, AI 질문 및 대화 ID 검증은 추후 확인이 필요하다.
 
 ## 2. Firestore 데이터 검증
 
 - [ ] Firestore 컬렉션명이 문서와 일치한다.
   - 확인 방법: Firebase Console의 Firestore Data 화면에서 최상위 컬렉션 목록을 확인한다.
   - 기대 결과: 학습시간은 `data`, 대화 기록은 `conversations` 컬렉션에 저장되며 `chats` 컬렉션을 사용하지 않는다.
-- [ ] `data` 문서 필드와 타입이 올바르다.
+  - 부분 완료: `data` 컬렉션은 확인되었지만 `conversations` 컬렉션은 추후 확인이 필요하다.
+- [x] `data` 문서 필드와 타입이 올바르다.
   - 확인 방법: `data` 컬렉션의 표본 문서를 열어 필드와 저장 타입을 확인한다.
   - 기대 결과: `date`는 문자열, `value`는 숫자, `memo`는 문자열, `created_at`은 문자열 또는 timestamp로 저장된다.
 - [ ] 유효한 학습시간 시계열 데이터가 최소 100개 존재한다.
@@ -55,7 +57,7 @@
 - [ ] `conversations` 문서가 질문·답변 1쌍 구조를 사용한다.
   - 확인 방법: `conversations` 컬렉션의 표본 문서를 연다.
   - 기대 결과: 문서 한 개에 `message`, `answer`, `created_at`이 있고 `messages` 배열 기반 다중 턴 구조가 없다.
-- [ ] 데이터 CRUD 결과가 Firestore에 반영된다.
+- [x] 데이터 CRUD 결과가 Firestore에 반영된다.
   - 확인 방법: API로 테스트 데이터를 생성한 뒤 Firebase Console에서 확인하고, 수정 및 삭제 후 같은 문서를 다시 확인한다.
   - 기대 결과: 생성 시 문서가 나타나고 수정 시 필드가 변경되며 삭제 시 문서가 사라진다.
 
