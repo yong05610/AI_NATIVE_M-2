@@ -1,1 +1,251 @@
-/* 프론트엔드 스타일은 이후 단계에서 구현합니다. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, "Noto Sans KR", sans-serif;
+  background: #f4f6f8;
+  color: #1f2937;
+}
+
+.app-header {
+  padding: 32px 24px;
+  background: #2563eb;
+  color: white;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.app-header p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.app-container {
+  width: min(1100px, calc(100% - 32px));
+  margin: 24px auto;
+  display: grid;
+  gap: 20px;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.panel h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  font-weight: 700;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #64748b;
+}
+
+.secondary-button:hover {
+  background: #475569;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.summary-card {
+  padding: 14px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  display: grid;
+  gap: 8px;
+}
+
+.summary-card span {
+  color: #475569;
+  font-size: 14px;
+}
+
+.summary-card strong {
+  color: #1d4ed8;
+  font-size: 22px;
+}
+
+.empty-message {
+  color: #64748b;
+}
+
+.loading-message {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.study-records {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.study-record {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.study-record-content {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.study-record-content strong {
+  font-size: 17px;
+}
+
+.study-record-content span,
+.study-record-content p {
+  margin: 0;
+  color: #64748b;
+}
+
+.study-record-content p {
+  overflow-wrap: anywhere;
+}
+
+.record-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.record-actions button {
+  padding: 8px 12px;
+}
+
+.delete-button {
+  background: #dc2626;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+
+.chat-result {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+#status-message {
+  margin: 0;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+#status-section.is-loading {
+  border-color: #93c5fd;
+}
+
+#status-section.is-success {
+  border-color: #86efac;
+}
+
+#status-section.is-success #status-message {
+  color: #15803d;
+}
+
+#status-section.is-error {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+#status-section.is-error #status-message {
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .app-header h1 {
+    font-size: 24px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .study-record {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .record-actions button {
+    flex: 1;
+  }
+}

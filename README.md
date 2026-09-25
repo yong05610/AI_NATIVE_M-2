@@ -1,6 +1,6 @@
 # AI 학습시간 분석 비서
 
-학습시간 시계열 데이터를 기록·분석하고 저장된 학습 이력을 바탕으로 AI 학습 조언을 제공하는 FastAPI 백엔드 프로젝트입니다. Firestore에 학습시간과 질문·답변 기록을 저장하고 OpenAI API로 한국어 학습 코칭 답변을 생성합니다.
+학습시간 시계열 데이터를 기록·분석하고 저장된 학습 이력을 바탕으로 AI 학습 조언을 제공하는 웹서비스입니다. React 화면에서 학습시간과 대화를 관리하고, FastAPI와 Firestore에 데이터를 저장하며 OpenAI API로 한국어 학습 코칭 답변을 생성합니다.
 
 ## 주요 기능
 
@@ -18,7 +18,25 @@
 - Backend: Python, FastAPI, Uvicorn
 - Database: Firebase Firestore
 - AI: OpenAI API
-- Frontend: HTML, CSS, Vanilla JavaScript
+- Frontend: React, TypeScript, Vite, CSS
+
+## 프론트엔드 로컬 실행
+
+백엔드를 먼저 `http://127.0.0.1:8000`에서 실행한 뒤 별도 PowerShell에서 프론트엔드를 시작합니다.
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+기본 접속 주소는 `http://localhost:5173`입니다. 개발 중에는 Vite 프록시가 `/api` 요청을 로컬 백엔드로 전달합니다. 배포 환경이나 별도 백엔드 주소를 사용할 때는 `frontend/.env.example`을 참고해 다음 변수만 설정합니다.
+
+```text
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+프론트엔드 프로덕션 빌드는 `frontend` 디렉터리에서 `npm run build`로 확인합니다. 실제 API 키나 Firebase 인증정보는 프론트엔드 코드 또는 환경변수에 넣지 않습니다.
 
 ## API 엔드포인트
 

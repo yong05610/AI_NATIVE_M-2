@@ -19,6 +19,11 @@ __pycache__/
 .ruff_cache/
 *.log
 
+# Frontend dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
 # Editor and operating system files
 .vscode/
 .idea/

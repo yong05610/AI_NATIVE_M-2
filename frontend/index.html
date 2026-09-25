@@ -1,11 +1,97 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI 학습시간 분석 비서</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- 프론트엔드 화면은 이후 단계에서 구현합니다. -->
+  <header class="app-header">
+    <h1>AI 학습시간 분석 비서</h1>
+    <p>학습시간을 기록하고 AI 학습 조언을 받아보세요.</p>
+  </header>
+
+  <main class="app-container">
+    <section id="status-section" class="panel">
+      <h2>상태 메시지</h2>
+      <p id="status-message" role="status" aria-live="polite">학습 데이터를 불러올 준비가 되었습니다.</p>
+    </section>
+
+    <section id="study-form-section" class="panel">
+      <h2>학습시간 입력</h2>
+
+      <form id="study-form">
+        <label for="study-date">날짜</label>
+        <input id="study-date" name="date" type="date" required />
+
+        <label for="study-value">학습시간</label>
+        <input id="study-value" name="value" type="number" min="1" step="1" placeholder="분 단위" required />
+
+        <label for="study-memo">메모</label>
+        <input id="study-memo" name="memo" type="text" placeholder="예: FastAPI 기초 학습" />
+
+        <div class="button-row">
+          <button id="study-submit-button" type="submit">등록</button>
+          <button id="study-cancel-button" type="button" class="secondary-button" hidden>
+            수정 취소
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section id="summary-section" class="panel">
+      <h2>학습 통계 요약</h2>
+
+      <div id="summary-content" class="summary-grid" aria-live="polite">
+        <div class="summary-card"><span>전체 기록 수</span><strong id="summary-count">-</strong></div>
+        <div class="summary-card"><span>총 학습시간</span><strong id="summary-total">-</strong></div>
+        <div class="summary-card"><span>평균 학습시간</span><strong id="summary-average">-</strong></div>
+        <div class="summary-card"><span>최대 학습시간</span><strong id="summary-max">-</strong></div>
+        <div class="summary-card"><span>최소 학습시간</span><strong id="summary-min">-</strong></div>
+        <div class="summary-card"><span>최근 7일 학습시간</span><strong id="summary-recent-total">-</strong></div>
+        <div class="summary-card"><span>최근 학습 흐름</span><strong id="summary-trend">-</strong></div>
+      </div>
+    </section>
+
+    <section id="data-list-section" class="panel">
+      <h2>학습기록 목록</h2>
+
+      <div id="study-list" aria-live="polite">
+        <p class="empty-message">아직 불러온 학습기록이 없습니다.</p>
+      </div>
+    </section>
+
+    <section id="chat-section" class="panel">
+      <h2>AI 질문</h2>
+
+      <form id="chat-form">
+        <label for="chat-message">질문</label>
+        <textarea
+          id="chat-message"
+          name="message"
+          rows="4"
+          placeholder="예: 최근 학습 흐름이 어때?"
+        ></textarea>
+
+        <button id="chat-submit-button" type="submit">AI에게 질문하기</button>
+      </form>
+
+      <div id="chat-result" class="chat-result">
+        <h3>AI 답변</h3>
+        <p class="empty-message">아직 표시할 답변이 없습니다.</p>
+      </div>
+    </section>
+
+    <section id="conversation-section" class="panel">
+      <h2>AI 대화 기록</h2>
+
+      <div id="conversation-list">
+        <p class="empty-message">아직 불러온 대화 기록이 없습니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
 </body>
 </html>
