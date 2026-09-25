@@ -207,9 +207,9 @@
 - [x] GitHub Actions 백엔드 CI workflow가 구성되어 있다.
   - 확인 방법: `.github/workflows/backend-tests.yml`의 트리거와 실행 단계를 확인한다.
   - 기대 결과: Python 3.12에서 의존성 설치, compileall, pytest를 `main` push 및 pull request 때 실행한다.
-- [ ] GitHub Actions가 원격 저장소에서 성공한다.
+- [x] GitHub Actions가 원격 저장소에서 성공한다.
   - 확인 방법: 변경 사항을 push하거나 pull request를 생성한 뒤 Actions 실행 결과를 확인한다.
-  - 기대 결과: `Backend Tests` workflow의 모든 단계가 성공하며 별도 Firebase/OpenAI secrets를 요구하지 않는다.
+  - 기대 결과: `Backend Tests` workflow가 Python 3.12에서 compileall과 전체 pytest를 실행해 `57 passed`로 성공하며 별도 Firebase/OpenAI secrets를 요구하지 않는다.
 - [ ] README에 CI 상태 배지가 포함되어 있다.
   - 확인 방법: 저장소 소유자와 이름이 확정된 뒤 README 상단의 workflow 배지를 확인한다.
   - 기대 결과: 배지가 `.github/workflows/backend-tests.yml`의 최신 상태를 표시한다.

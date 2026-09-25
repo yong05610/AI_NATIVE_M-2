@@ -137,8 +137,8 @@
 - [x] GitHub Actions 백엔드 CI를 구성한다.
   - 작업 내용: `.github/workflows/backend-tests.yml`에서 Python 3.12 의존성 설치, compileall, pytest를 실행한다.
   - 완료 기준: `main` 브랜치 push 및 `main` 대상 pull request에서 workflow가 시작되도록 설정되어 있고 로컬에서 동일 검증 명령이 통과한다.
-- [ ] GitHub Actions 원격 실행 결과를 확인한다.
-  - 완료 기준: GitHub에서 workflow가 실제로 실행되어 compileall과 전체 pytest가 성공 상태로 완료된다.
+- [x] GitHub Actions 원격 실행 결과를 확인한다.
+  - 완료 기준: GitHub의 `Backend Tests` workflow가 Python 3.12에서 compileall과 전체 pytest를 실행해 `57 passed`로 성공 완료된다.
 - [ ] 백엔드를 Render에 배포한다.
   - 완료 기준: 환경변수가 Render에 설정되고 배포 URL의 `GET /`, `/docs`, Firestore 연동, OpenAI 채팅이 정상 동작한다.
 - [ ] 프론트엔드를 Vercel에 배포한다.

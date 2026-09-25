@@ -115,8 +115,9 @@ cd backend
 - Python: 3.12
 - 실행 조건: `main` 브랜치 push, `main` 대상 pull request
 - 실행 단계: 의존성 설치, `python -m compileall -q backend`, 전체 pytest
+- 원격 실행 결과: `Backend Tests` workflow 성공, `57 passed`
 
-로컬에서는 동일한 검증이 통과했지만 GitHub Actions의 실제 원격 실행 결과는 아직 확인이 필요합니다. 저장소 소유자와 이름이 확정되지 않아 CI 상태 배지는 추가하지 않았습니다.
+로컬과 GitHub Actions에서 동일한 compileall 및 pytest 검증이 통과했습니다. 저장소 소유자와 이름이 확정되지 않아 CI 상태 배지는 추가하지 않았습니다.
 
 ## 환경변수 준비
 
