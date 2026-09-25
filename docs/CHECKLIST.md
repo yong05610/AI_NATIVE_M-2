@@ -28,19 +28,23 @@
 - [ ] 대화 기록을 API로 직접 저장할 수 있다.
   - 확인 방법: `POST /api/conversations`에 `{"message":"최근 학습 흐름이 어때?","answer":"최근 학습시간이 증가하고 있습니다."}`를 전송하고 반환된 `id`를 기록한다.
   - 기대 결과: 성공 응답에 `id`, `message`, `answer`, `created_at`이 포함되고 `conversations` 컬렉션에 문서 한 개가 생성된다.
+  - 부분 완료: 서비스 및 라우터 mock 테스트는 통과했으며 실제 Firestore 저장 통합 검증은 추후 확인이 필요하다.
 - [ ] 대화 기록 목록을 조회할 수 있다.
   - 확인 방법: `GET /api/conversations`를 호출하고 앞에서 생성한 대화 `id`를 찾는다.
   - 기대 결과: 응답 배열에 `id`, `message`, `answer`, `created_at`이 포함되고 최신 대화가 먼저 조회된다.
+  - 부분 완료: 최신순 정렬과 응답 형식은 mock 테스트로 확인했으며 실제 Firestore 조회는 추후 확인이 필요하다.
 - [ ] 특정 대화 기록을 상세 조회할 수 있다.
   - 확인 방법: `GET /api/conversations/{id}`에 앞에서 기록한 대화 `id`를 사용한다.
   - 기대 결과: 해당 대화의 질문 1개와 답변 1개가 `message`, `answer`로 반환된다.
+  - 부분 완료: 정상 응답과 존재하지 않는 ID의 404 처리는 mock 테스트로 확인했다.
 - [ ] 특정 대화 기록을 삭제할 수 있다.
   - 확인 방법: 앞에서 기록한 대화 `id`로 `DELETE /api/conversations/{id}`를 호출한 뒤 목록을 다시 조회한다.
   - 기대 결과: `{"message":"Conversation deleted successfully"}`가 반환되고 해당 대화가 목록과 Firestore에서 사라진다.
-- [ ] API 입력값과 존재하지 않는 ID가 검증된다.
+  - 부분 완료: 정상 삭제와 존재하지 않는 ID의 404 처리는 mock 테스트로 확인했으며 실제 Firestore 삭제는 추후 확인이 필요하다.
+- [x] API 입력값과 존재하지 않는 ID가 검증된다.
   - 확인 방법: 빈 `date`, 0 이하의 `value`, 빈 AI 질문, 존재하지 않는 데이터 및 대화 ID로 각각 요청한다.
   - 기대 결과: 서버가 중단되지 않고 각 요청에 적절한 검증 또는 찾을 수 없음 오류를 반환한다.
-  - 부분 완료: 학습시간 데이터 입력값 검증과 빈 데이터 요약 처리는 확인되었지만, AI 질문 및 대화 ID 검증은 추후 확인이 필요하다.
+  - 자동 테스트 결과: 학습시간 및 채팅 입력값 검증, 빈 데이터 요약, 존재하지 않는 학습시간 및 대화 ID의 오류 처리를 확인했다.
 
 ## 2. Firestore 데이터 검증
 
@@ -66,6 +70,7 @@
 - [ ] `POST /api/chat` 호출 시 AI 답변이 생성된다.
   - 확인 방법: `POST /api/chat`에 `{"message":"최근 학습 흐름이 어때?"}`를 전송한다.
   - 기대 결과: 빈 문자열이 아닌 `answer`가 반환되고 학습 코치처럼 친절하고 구체적인 문장과 다음 행동 제안이 포함된다.
+  - 부분 완료: OpenAI 호출과 응답 처리는 mock 테스트로 확인했으며 실제 OpenAI 응답 품질은 추후 확인이 필요하다.
 - [ ] AI 답변이 저장된 학습시간 요약을 근거로 한다.
   - 확인 방법: `GET /api/data/summary` 결과를 기록한 뒤 최근 흐름, 평균 또는 최대 학습시간에 관한 질문을 전송하고 응답을 비교한다.
   - 기대 결과: AI 답변이 저장된 학습 데이터와 모순되지 않고 관련 통계 또는 흐름을 근거로 설명한다.
@@ -75,6 +80,7 @@
 - [ ] `POST /api/chat` 호출 후 대화가 자동 저장된다.
   - 확인 방법: 호출 전 `conversations` 문서 수를 기록하고 AI 질문을 한 번 전송한 뒤 새 문서를 확인한다.
   - 기대 결과: 문서 수가 정확히 1개 증가하고 새 문서의 `message`와 `answer`가 해당 요청 및 응답과 일치한다.
+  - 부분 완료: `create_conversation()`이 정확히 한 번 호출되고 payload와 반환값이 일치하는지 mock 테스트로 확인했다.
 - [ ] 프론트엔드 AI 질문 흐름에서 대화가 중복 저장되지 않는다.
   - 확인 방법: 브라우저 개발자 도구의 Network 기록과 질문 전후 `conversations` 문서 수를 확인하면서 질문을 한 번 전송한다.
   - 기대 결과: 프론트엔드는 `POST /api/chat`을 한 번만 호출하고 뒤이어 `POST /api/conversations`를 호출하지 않으며, Firestore 문서는 정확히 1개만 증가한다.
@@ -114,22 +120,22 @@
 
 ## 5. 배포 및 환경변수 검증
 
-- [ ] 프로젝트 루트에 로컬 가상환경 `.venv`가 생성되어 있다.
+- [x] 프로젝트 루트에 로컬 가상환경 `.venv`가 생성되어 있다.
   - 확인 방법: 프로젝트 루트에서 `Test-Path .venv`와 `Test-Path .venv\Scripts\python.exe`를 실행한다.
   - 기대 결과: 두 명령이 모두 `True`를 반환한다.
 - [ ] PowerShell에서 프로젝트 로컬 가상환경이 활성화된다.
   - 확인 방법: `.\.venv\Scripts\Activate.ps1`를 실행하고 PowerShell 프롬프트를 확인한다.
   - 기대 결과: 프롬프트 앞에 `(.venv)`가 표시된다.
-- [ ] 활성화된 Python 버전이 프로젝트 정책을 만족한다.
+- [x] 활성화된 Python 버전이 프로젝트 정책을 만족한다.
   - 확인 방법: 가상환경 활성화 후 `python --version`을 실행한다.
   - 기대 결과: Python 3.11 이상이며 권장·로컬 검증 버전인 Python 3.12.x가 사용된다. Python 3.14는 검증에 사용하지 않는다.
-- [ ] pip가 전역환경이 아닌 `.venv`에 연결되어 있다.
+- [x] pip가 전역환경이 아닌 `.venv`에 연결되어 있다.
   - 확인 방법: 가상환경 활성화 후 `python -m pip --version`을 실행한다.
   - 기대 결과: 출력된 pip 설치 경로에 프로젝트의 `.venv` 경로가 포함된다.
 - [ ] 시스템 기본 Python이 3.14여도 프로젝트 실행에는 사용되지 않는다.
   - 확인 방법: `py --list`, `python --version`, `python -m pip --version` 결과를 함께 비교한다.
   - 기대 결과: `py --list`에서 3.14가 기본값이어도 활성 프로젝트 인터프리터와 pip는 `.venv`의 Python 3.12.x 또는 허용된 Python 3.11 이상을 가리킨다.
-- [ ] `.venv`가 Git 추적 대상에서 제외된다.
+- [x] `.venv`가 Git 추적 대상에서 제외된다.
   - 확인 방법: `.gitignore`에서 `.venv/`를 확인하고 `git check-ignore -v .venv`를 실행한다.
   - 기대 결과: `.venv/`가 ignore 규칙과 일치하며 `git status`에 가상환경 내부 파일이 표시되지 않는다.
 - [ ] Render 백엔드 배포 URL이 동작한다.
@@ -153,16 +159,16 @@
 
 ## 6. README 및 제출물 검증
 
-- [ ] README에 서비스 소개와 기술 스택이 포함되어 있다.
+- [x] README에 서비스 소개와 기술 스택이 포함되어 있다.
   - 확인 방법: README에서 서비스가 해결하는 문제와 FastAPI, Firestore, OpenAI API, Vanilla JavaScript, Render, Vercel 설명을 찾는다.
   - 기대 결과: 서비스 목적과 실제 사용 기술을 문서만으로 확인할 수 있다.
 - [ ] README에 필수 URL이 포함되어 있다.
   - 확인 방법: 프론트엔드, 백엔드 API, Swagger URL을 각각 클릭한다.
   - 기대 결과: 세 URL이 명확히 구분되어 있고 실제 배포 위치로 연결된다.
-- [ ] README에 로컬 실행 방법과 환경변수 목록이 포함되어 있다.
+- [x] README에 로컬 실행 방법과 환경변수 목록이 포함되어 있다.
   - 확인 방법: 새 환경에서 README 순서대로 의존성 설치와 서버 실행을 검토하고 환경변수 항목을 대조한다.
   - 기대 결과: 백엔드와 프론트엔드 실행 절차 및 최소 환경변수 이름을 확인할 수 있고 실제 비밀값은 없다.
-- [ ] README에 Render 첫 요청 지연 안내가 포함되어 있다.
+- [x] README에 Render 첫 요청 지연 안내가 포함되어 있다.
   - 확인 방법: 배포 또는 주의사항 영역에서 무료 티어의 슬립 및 콜드 스타트 설명을 찾는다.
   - 기대 결과: 첫 요청이 지연될 수 있다는 안내 또는 대응 방법이 명시되어 있다.
 - [ ] 데이터 요약이 보이는 채팅 화면 스크린샷이 포함되어 있다.
@@ -189,3 +195,27 @@
 - [ ] 빈 데이터와 외부 연동 실패에서도 서비스가 복구 가능한 상태를 유지한다.
   - 확인 방법: 빈 데이터 환경의 요약 조회와 잘못된 환경변수 또는 일시적인 API 실패 상황의 화면 및 서버 응답을 확인한다.
   - 기대 결과: 0 나누기나 서버 중단 없이 명확한 오류 또는 빈 데이터 안내가 제공되고 이후 정상 요청을 다시 처리할 수 있다.
+
+## 8. 자동 테스트 및 CI 검증
+
+- [x] 백엔드 mock 기반 테스트가 통과한다.
+  - 확인 방법: `backend`에서 `python -m pytest tests -v`를 실행한다.
+  - 기대 결과: Chat, 학습시간 데이터, 대화 기록, Firestore 서비스, Firebase core, health/root 테스트 57개가 모두 통과하며 실제 외부 요청이 발생하지 않는다.
+- [x] Python 문법 검사가 통과한다.
+  - 확인 방법: 프로젝트 루트에서 `python -m compileall -q backend`를 실행한다.
+  - 기대 결과: 오류 없이 종료된다.
+- [x] GitHub Actions 백엔드 CI workflow가 구성되어 있다.
+  - 확인 방법: `.github/workflows/backend-tests.yml`의 트리거와 실행 단계를 확인한다.
+  - 기대 결과: Python 3.12에서 의존성 설치, compileall, pytest를 `main` push 및 pull request 때 실행한다.
+- [ ] GitHub Actions가 원격 저장소에서 성공한다.
+  - 확인 방법: 변경 사항을 push하거나 pull request를 생성한 뒤 Actions 실행 결과를 확인한다.
+  - 기대 결과: `Backend Tests` workflow의 모든 단계가 성공하며 별도 Firebase/OpenAI secrets를 요구하지 않는다.
+- [ ] README에 CI 상태 배지가 포함되어 있다.
+  - 확인 방법: 저장소 소유자와 이름이 확정된 뒤 README 상단의 workflow 배지를 확인한다.
+  - 기대 결과: 배지가 `.github/workflows/backend-tests.yml`의 최신 상태를 표시한다.
+- [ ] 실제 Firebase/Firestore 통합 테스트 수행 여부를 결정한다.
+  - 확인 방법: 테스트 전용 프로젝트와 자격 증명 사용 여부 및 데이터 정리 방식을 검토한다.
+  - 기대 결과: 실제 연동 테스트의 수행 여부와 안전한 절차가 문서화된다.
+- [ ] Starlette TestClient의 DeprecationWarning 대응 여부를 확인한다.
+  - 확인 방법: pytest 경고와 FastAPI, Starlette, AnyIO 버전 호환성을 검토한다.
+  - 기대 결과: 호환 버전으로 해소하거나 현재 영향이 없음을 기록한다.

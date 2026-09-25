@@ -6,9 +6,9 @@
   - 작업 내용: Python 3.12를 로컬 검증 권장 버전으로 사용하고 프로젝트 루트의 `.venv`에서만 개발한다. Python 3.14는 현재 프로젝트의 검증 대상에서 제외한다.
   - 완료 기준: `py -3.12 -m venv .venv`로 가상환경을 생성하고 `.\.venv\Scripts\Activate.ps1`로 활성화할 수 있으며, `python --version`이 Python 3.12.x 또는 허용 범위인 Python 3.11 이상이다. `python -m pip --version` 경로에 `.venv`가 포함된다.
 - [x] 필수 패키지와 의존성 파일을 준비한다.
-  - 작업 내용: `fastapi`, `uvicorn`, `firebase-admin`, `openai`, `python-dotenv`를 설치하고 `requirements.txt`에 기록한다.
+  - 작업 내용: `fastapi`, `uvicorn`, `firebase-admin`, `openai`, `python-dotenv`, `pytest`를 설치하고 `requirements.txt`에 기록한다.
   - 완료 기준: 활성화된 `.venv`에서 `python -m pip install -r backend/requirements.txt`로 패키지를 설치할 수 있다.
-- [ ] 환경변수 파일 구조를 준비한다.
+- [x] 환경변수 파일 구조를 준비한다.
   - 작업 내용: `OPENAI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FRONTEND_ORIGIN`을 로컬 및 배포 환경에서 주입할 수 있게 하고, 예시 값만 포함한 `.env.example`을 작성한다.
   - 완료 기준: 실제 비밀값이 소스 코드와 Git에 포함되지 않고 `.env`가 `.gitignore`에 등록되어 있다.
 
@@ -32,6 +32,7 @@
 - [ ] `data`와 `conversations` 컬렉션 접근 구조를 구현한다.
   - 작업 내용: `data`에는 `date`, `value`, `memo`, `created_at`을 저장한다. `conversations`의 문서 1개에는 질문 1개와 답변 1개를 `message`, `answer`, `created_at`으로 저장한다.
   - 완료 기준: 두 컬렉션에 테스트 문서를 저장하고 다시 조회할 수 있으며, `messages` 배열을 사용하는 다중 턴 구조는 포함하지 않는다.
+  - 부분 완료: 두 컬렉션 접근 함수와 문서 구조는 구현 및 mock 테스트가 완료됐으며, 실제 `conversations` 컬렉션 통합 검증은 추후 확인이 필요하다.
 
 ## 4. 학습시간 데이터 API 구현
 
@@ -58,13 +59,13 @@
 
 ## 5. AI 대화 기능 구현
 
-- [ ] 학습시간 요약을 AI 시스템 프롬프트에 주입한다.
+- [x] 학습시간 요약을 AI 시스템 프롬프트에 주입한다.
   - 완료 기준: `POST /api/chat` 처리 시 Firestore 데이터를 조회해 요약을 생성하고, 사용자의 실제 학습 기록을 근거로 답하도록 OpenAI 요청에 포함한다.
-- [ ] AI 채팅 API를 구현한다.
+- [x] AI 채팅 API를 구현한다.
   - 엔드포인트: `POST /api/chat`
-  - 요청/응답: `{"message":"최근 학습 흐름이 어때?"}`를 받아 `{"answer":"..."}`를 반환한다.
+  - 요청/응답: `{"message":"최근 학습 흐름이 어때?"}`를 받아 저장된 대화의 `id`, `message`, `answer`, `created_at`을 반환한다.
   - 검증 기준: 빈 질문을 거부하고, 정상 요청에는 친절하고 구체적인 학습 코치 말투로 너무 길지 않은 답변과 다음 행동을 반환하며, 데이터가 부족하면 그 사실과 일반적인 조언을 안내한다. 개발·테스트 단계에서는 적절한 출력 토큰 제한을 적용한다.
-- [ ] 생성한 질문과 답변을 `conversations`에 자동 저장한다.
+- [x] 생성한 질문과 답변을 `conversations`에 자동 저장한다.
   - 작업 내용: OpenAI 응답 생성 후 같은 요청 흐름 안에서 `message`, `answer`, `created_at`을 한 문서로 저장한다.
   - 완료 기준: 채팅 응답 한 번당 대화 문서가 정확히 한 개 생성되고 질문과 답변이 함께 저장된다.
 - [ ] 프론트엔드 채팅 호출의 중복 저장 방지 규칙을 적용한다.
@@ -73,19 +74,19 @@
 
 ## 6. 대화 기록 API 구현
 
-- [ ] 대화 기록 저장 API를 구현한다.
+- [x] 대화 기록 저장 API를 구현한다.
   - 엔드포인트: `POST /api/conversations`
   - 요청/응답: `{"message":"최근 학습 흐름이 어때?","answer":"최근 기록을 보면..."}`를 받아 생성된 `id`, `message`, `answer`, `created_at`을 반환한다.
   - 검증 기준: 질문과 답변이 모두 있는 요청만 저장하고 문서 1개가 질문·답변 1쌍만 포함한다. 이 API는 Swagger 또는 별도 API 클라이언트용이며 프론트엔드의 AI 질문 흐름에서는 호출하지 않는다.
-- [ ] 대화 기록 목록 조회 API를 구현한다.
+- [x] 대화 기록 목록 조회 API를 구현한다.
   - 엔드포인트: `GET /api/conversations`
   - 요청/응답: 요청 본문 없이 각 항목의 `id`, `message`, `answer`, `created_at`을 포함한 배열을 반환한다.
   - 검증 기준: 최신 대화를 먼저 표시할 수 있는 순서로 반환하고, 기록이 없을 때 빈 배열을 오류 없이 반환한다.
-- [ ] 특정 대화 기록 불러오기 API를 구현한다.
+- [x] 특정 대화 기록 불러오기 API를 구현한다.
   - 엔드포인트: `GET /api/conversations/{id}`
   - 요청/응답: 경로의 `id`에 해당하는 `id`, `message`, `answer`, `created_at`을 반환한다.
   - 검증 기준: 선택한 질문과 답변 전체를 반환해 채팅창에 다시 표시할 수 있고, 존재하지 않는 `id`에는 적절한 오류를 반환한다.
-- [ ] 대화 기록 삭제 API를 구현한다.
+- [x] 대화 기록 삭제 API를 구현한다.
   - 엔드포인트: `DELETE /api/conversations/{id}`
   - 요청/응답: 경로의 문서 `id`를 삭제하고 `{"message":"Conversation deleted successfully"}`를 반환한다.
   - 검증 기준: 삭제 후 목록에서 문서가 사라지고, 존재하지 않는 `id`에는 적절한 오류를 반환한다.
@@ -130,6 +131,14 @@
 
 ## 9. README 및 제출 준비
 
+- [x] 백엔드 mock 기반 자동 테스트를 구성한다.
+  - 작업 내용: Chat, 학습시간 데이터, 대화 기록, Firestore 서비스, Firebase core, health/root 라우터를 실제 외부 호출 없이 검증한다.
+  - 완료 기준: Python 3.12 로컬 환경에서 `python -m pytest tests -v` 실행 결과가 `57 passed`이며 실제 Firebase, Firestore, OpenAI 요청이 발생하지 않는다.
+- [x] GitHub Actions 백엔드 CI를 구성한다.
+  - 작업 내용: `.github/workflows/backend-tests.yml`에서 Python 3.12 의존성 설치, compileall, pytest를 실행한다.
+  - 완료 기준: `main` 브랜치 push 및 `main` 대상 pull request에서 workflow가 시작되도록 설정되어 있고 로컬에서 동일 검증 명령이 통과한다.
+- [ ] GitHub Actions 원격 실행 결과를 확인한다.
+  - 완료 기준: GitHub에서 workflow가 실제로 실행되어 compileall과 전체 pytest가 성공 상태로 완료된다.
 - [ ] 백엔드를 Render에 배포한다.
   - 완료 기준: 환경변수가 Render에 설정되고 배포 URL의 `GET /`, `/docs`, Firestore 연동, OpenAI 채팅이 정상 동작한다.
 - [ ] 프론트엔드를 Vercel에 배포한다.
