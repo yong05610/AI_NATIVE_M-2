@@ -18,7 +18,7 @@ if ($majorVersion -ne 3 -or $minorVersion -lt 11 -or $minorVersion -eq 14) {
 
 Push-Location -LiteralPath $backendPath
 try {
-    & $venvPython -m uvicorn main:app --reload
+    & $venvPython -m uvicorn main:app --reload --port 8001
 }
 finally {
     Pop-Location

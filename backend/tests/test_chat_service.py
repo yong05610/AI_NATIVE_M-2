@@ -20,7 +20,7 @@ class Dumpable:
 
 
 def test_create_chat_answer_saves_conversation_once(monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "mock-api-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "  mock-api-key  ")
     monkeypatch.delenv("OPENAI_MODEL", raising=False)
 
     summary = Dumpable(count=12, total_minutes=660)
@@ -85,7 +85,7 @@ def test_create_chat_answer_saves_conversation_once(monkeypatch):
 
 
 def test_create_chat_answer_requires_api_key(monkeypatch):
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "   ")
     openai_constructor = Mock()
     summarize = Mock()
     list_data = Mock()
@@ -104,6 +104,45 @@ def test_create_chat_answer_requires_api_key(monkeypatch):
     openai_constructor.assert_not_called()
     summarize.assert_not_called()
     list_data.assert_not_called()
+    conversation_create.assert_not_called()
+
+
+def test_create_chat_answer_logs_safe_openai_error(monkeypatch, caplog):
+    api_key = "diagnostic-secret-key"
+    monkeypatch.setenv("OPENAI_API_KEY", api_key)
+
+    class AuthenticationError(Exception):
+        status_code = 401
+        code = "invalid_api_key"
+        body = {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "message": f"invalid key: {api_key}",
+        }
+
+    openai_error = AuthenticationError(f"authentication failed: {api_key}")
+    completion_create = Mock(side_effect=openai_error)
+    client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=completion_create))
+    )
+    conversation_create = Mock()
+
+    monkeypatch.setattr(chat_service, "summarize_study_data", Mock(return_value=Dumpable()))
+    monkeypatch.setattr(chat_service, "list_study_data", Mock(return_value=[]))
+    monkeypatch.setattr(chat_service, "OpenAI", Mock(return_value=client))
+    monkeypatch.setattr(chat_service, "create_conversation", conversation_create)
+
+    with caplog.at_level("ERROR", logger=chat_service.__name__):
+        with pytest.raises(AppException) as exception_info:
+            chat_service.create_chat_answer(ChatRequest(message="질문"))
+
+    assert exception_info.value.status_code == 503
+    assert exception_info.value.detail == "OpenAI request failed: AuthenticationError"
+    assert "exception_class=AuthenticationError" in caplog.text
+    assert "status_code=401" in caplog.text
+    assert "code=invalid_api_key" in caplog.text
+    assert "[REDACTED]" in caplog.text
+    assert api_key not in caplog.text
     conversation_create.assert_not_called()
 
 
