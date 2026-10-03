@@ -192,21 +192,31 @@
 - [x] `.venv`가 Git 추적 대상에서 제외된다.
   - 확인 방법: `.gitignore`에서 `.venv/`를 확인하고 `git check-ignore -v .venv`를 실행한다.
   - 기대 결과: `.venv/`가 ignore 규칙과 일치하며 `git status`에 가상환경 내부 파일이 표시되지 않는다.
-- [ ] Render 백엔드 배포 URL이 동작한다.
-  - 확인 방법: README에 적힌 Render URL에서 `GET /`, `GET /api/health/firestore`, `POST /api/chat`을 차례로 호출한다.
+- [x] Render 백엔드가 배포되어 Live 상태이며 공개 URL이 확정됐다.
+  - 확인 방법: Render 서비스 상태와 README의 백엔드 URL을 확인한다.
+  - 확인 결과: 서비스 상태는 Live이며 공개 URL은 `https://ai-native-m-2.onrender.com`이다.
+- [x] 프론트엔드 기본 API 주소가 Render 백엔드를 사용한다.
+  - 확인 방법: `frontend/app.js`와 `frontend/config.example.js`의 기본 API 주소를 확인한다.
+  - 확인 결과: 두 파일 모두 `https://ai-native-m-2.onrender.com`을 사용한다.
+- [ ] Render 공개 환경에서 Firestore와 OpenAI를 포함한 전체 백엔드 흐름이 동작한다.
+  - 확인 방법: Render URL에서 `GET /`, `GET /api/health/firestore`, 필요한 범위의 `POST /api/chat`을 검증한다.
   - 기대 결과: 공개 URL에서 서버, Firestore, OpenAI 기능이 정상 응답한다. 첫 요청 지연이 있다면 README의 콜드 스타트 안내와 일치한다.
-- [ ] Render의 Swagger 문서에 접속할 수 있다.
+- [x] Render의 Swagger 문서 URL이 확정됐다.
   - 확인 방법: Render 백엔드 URL의 `/docs`를 브라우저에서 연다.
   - 기대 결과: Swagger UI가 열리고 PRD에 정의된 데이터, 요약, 채팅, 대화 기록 API가 모두 표시된다.
+  - 확인 결과: Swagger URL은 `https://ai-native-m-2.onrender.com/docs`이다.
 - [ ] Vercel 프론트엔드 배포 URL이 동작한다.
   - 확인 방법: README에 적힌 Vercel URL을 새 브라우저 세션에서 열고 데이터 조회와 AI 질문을 실행한다.
   - 기대 결과: 정적 화면이 정상 로드되고 Render API를 사용한 데이터 관리, 요약, AI 채팅, 대화 불러오기가 동작한다.
+  - 미완료 사유: Vercel 배포 전이며 URL이 아직 확정되지 않았다.
 - [ ] 배포 환경에서 CORS가 정상 동작한다.
   - 확인 방법: Vercel 페이지에서 API를 호출하며 개발자 도구 Console과 Network를 확인한다.
   - 기대 결과: Vercel 출처의 요청이 허용되고 CORS 차단 오류가 발생하지 않는다.
+  - 남은 작업: Vercel 배포 후 Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경하고 재검증한다.
 - [ ] 필수 환경변수가 배포 환경에 설정되어 있다.
   - 확인 방법: Render 설정에서 `OPENAI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FRONTEND_ORIGIN`의 존재 여부를 확인하고 Vercel의 API 서버 URL 설정을 확인한다.
   - 기대 결과: 필요한 변수들이 배포 설정에 존재하고 애플리케이션이 이를 통해 Firestore, OpenAI, Render API에 연결된다.
+  - 현재 상태: Vercel 배포 후 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 수정해야 하므로 최종 완료 처리하지 않는다.
 - [x] 민감정보가 코드와 공개 저장소에 직접 노출되지 않는다.
   - 확인 방법: 저장소에서 실제 OpenAI 키, Firebase 개인키, 서비스 계정 JSON을 검색하고 `.gitignore`, `.env.example`, Git 추적 파일을 확인한다.
   - 기대 결과: 실제 비밀값은 코드와 Git 추적 파일에 없고 `.env`는 무시되며 `.env.example`에는 예시 값만 있다.
@@ -220,6 +230,7 @@
 - [ ] README에 필수 URL이 포함되어 있다.
   - 확인 방법: 프론트엔드, 백엔드 API, Swagger URL을 각각 클릭한다.
   - 기대 결과: 세 URL이 명확히 구분되어 있고 실제 배포 위치로 연결된다.
+  - 현재 상태: Render 백엔드와 Swagger URL은 반영됐지만 Vercel URL은 미확정이다.
 - [x] README에 로컬 실행 방법과 환경변수 목록이 포함되어 있다.
   - 확인 방법: 새 환경에서 README 순서대로 의존성 설치와 서버 실행을 검토하고 환경변수 항목을 대조한다.
   - 기대 결과: 백엔드와 프론트엔드 실행 절차 및 최소 환경변수 이름을 확인할 수 있고 실제 비밀값은 없다.
@@ -242,8 +253,14 @@
   - 확인 방법: Vercel 화면에서 학습시간을 등록하고 목록 조회, 수정, 삭제를 순서대로 수행하면서 각 단계의 목록 및 요약을 확인한다.
   - 기대 결과: 네 CRUD 동작이 Render API와 Firestore에 반영되고 매 변경 후 화면과 요약 정보가 최신 상태를 유지한다.
 - [ ] AI 질문부터 대화 불러오기까지 전체 흐름이 연결된다.
-  - 확인 방법: Vercel 화면에서 질문 한 번을 전송하고 응답과 대화 목록을 확인한 뒤 해당 대화를 클릭한다.
-  - 기대 결과: 데이터 요약 기반 AI 응답이 표시되고 대화 문서가 한 개만 저장되며 선택한 질문과 답변이 채팅창에 복원된다.
+  - 확인 방법: Vercel 화면에서 질문을 전송하고 대화 목록·상세·삭제를 확인한 뒤 이전 대화를 클릭한다.
+  - 기대 결과: 데이터 요약 기반 AI 응답이 표시되고 대화 문서가 한 개만 저장되며 목록·상세·삭제와 채팅창 복원이 정상 동작한다.
+- [ ] Vercel에서 Render API 호출 시 CORS 오류가 발생하지 않는다.
+  - 확인 방법: Vercel 화면의 전체 기능을 실행하며 브라우저 Console과 Network를 확인한다.
+  - 기대 결과: 실제 Vercel Origin의 요청이 허용되고 CORS 차단 오류가 없다.
+- [ ] Render 무료 플랜의 콜드 스타트를 고려해 최종 흐름을 검증한다.
+  - 확인 방법: 유휴 상태 이후 첫 요청의 지연 가능성을 고려해 응답을 기다리고 후속 요청도 확인한다.
+  - 기대 결과: 첫 요청 지연이 발생해도 안내와 일치하며 서비스가 정상 응답 상태로 전환된다.
 - [ ] 로컬과 배포 환경의 API 경로 및 컬렉션명이 일치한다.
   - 확인 방법: Swagger, 프론트엔드 Network 기록, Firestore Console을 MISSION.md, PRD.md, docs/TASK.md와 대조한다.
   - 기대 결과: 데이터 API는 `/api/data`와 `/api/data/summary`, 대화 API는 `/api/conversations`, AI API는 `/api/chat`을 사용하고 컬렉션은 `data`, `conversations`만 사용한다.

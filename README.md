@@ -117,18 +117,20 @@ http://127.0.0.1:5500
 프론트엔드는 별도 설정이 없으면 다음 주소를 API 기본 주소로 사용합니다.
 
 ```text
-http://127.0.0.1:8001
+https://ai-native-m-2.onrender.com
 ```
 
 다른 백엔드 주소를 사용할 경우 `window.APP_CONFIG.API_BASE_URL` 값을 설정해 변경할 수 있습니다. 예시는 `frontend/config.example.js`에서 확인할 수 있습니다.
 
 ```js
 window.APP_CONFIG = {
-  API_BASE_URL: "https://your-backend.example.com"
+  API_BASE_URL: "https://ai-native-m-2.onrender.com"
 };
 ```
 
-배포 시에는 위 설정이 `frontend/app.js`보다 먼저 실행되도록 `index.html`에 인라인 설정 또는 별도 설정 스크립트로 주입하고, 예시 주소를 실제 Render URL로 교체합니다. 현재 `frontend/config.example.js`는 예시 파일이며 `index.html`에서 자동으로 로드하지 않습니다.
+현재 `frontend/app.js`와 `frontend/config.example.js`의 기본 API 주소는 배포된 Render 백엔드를 가리킵니다. 필요하면 `window.APP_CONFIG.API_BASE_URL`로 실행 환경별 주소를 재정의할 수 있습니다.
+
+`frontend/config.example.js`는 예시 파일이며 `index.html`에서 자동으로 로드하지 않습니다. 런타임에 API 주소를 재정의하려면 위 설정이 `frontend/app.js`보다 먼저 실행되도록 인라인 설정 또는 별도 설정 스크립트로 주입합니다.
 
 프론트엔드는 별도 패키지 설치나 빌드 과정 없이 정적 파일로 실행됩니다.
 실제 OpenAI API 키, Firebase 인증정보, 서비스 계정 정보는 프론트엔드 코드에 넣지 않습니다.
@@ -250,21 +252,33 @@ cd backend
 
 ## Render Python 버전
 
-Render에서도 로컬 검증 환경과 같은 Python 3.12를 선택하고 배포 로그에서 실제 버전을 확인합니다.
+Render 백엔드는 로컬 검증 환경과 같은 Python 3.12 기준으로 배포되어 있습니다. 설정을 변경하거나 재배포할 때는 배포 로그에서 실제 Python 버전을 확인합니다.
 
-Render 서비스 루트가 저장소 루트인지 `backend`인지 확정한 뒤 해당 루트 기준으로 Python 3.12 런타임 설정을 적용합니다.
+Render Web Service의 Root Directory는 `backend`를 기준으로 사용합니다.
 
 Render 무료 티어를 사용할 경우 서비스가 유휴 상태에서 중지되어 첫 요청 응답이 지연될 수 있습니다. 첫 요청에서 콜드 스타트가 발생하면 잠시 기다린 뒤 다시 확인하세요.
 
 ## 배포 상태
 
-현재 배포 URL은 아직 확정되지 않았습니다.
+Render 백엔드 배포는 완료되었으며, Vercel 프론트엔드는 배포 예정으로 URL이 아직 확정되지 않았습니다.
 
-- Render 백엔드 URL: 미확정
+- 백엔드 배포 상태: 완료
+- Render 서비스 상태: Live
+- Render 백엔드 URL: https://ai-native-m-2.onrender.com
+- Swagger URL: https://ai-native-m-2.onrender.com/docs
+- 프론트엔드 배포 상태: 진행 예정
 - Vercel 프론트엔드 URL: 미확정
-- Swagger URL: 미확정
 
-배포가 완료되면 실제 서비스 URL과 Swagger URL을 추가하고, Firebase, Firestore, OpenAI 통합 동작을 별도로 검증해야 합니다.
+프론트엔드의 기본 API 주소는 `https://ai-native-m-2.onrender.com`으로 설정되어 있습니다. 관련 설정 파일은 `frontend/app.js`와 `frontend/config.example.js`입니다.
+
+Vercel 배포 후에는 다음 작업을 완료해야 합니다.
+
+- README에 실제 Vercel 프론트엔드 URL 추가
+- Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경
+- Vercel 프론트엔드에서 Render API를 사용한 학습시간 CRUD 및 요약 조회 확인
+- AI 채팅과 대화 기록 목록·상세·삭제 확인
+- 브라우저 Console과 Network에서 CORS 오류가 없는지 확인
+- Render 무료 플랜의 첫 요청 콜드 스타트를 고려해 최종 통합 흐름 재검증
 
 ## 제출용 스크린샷
 
@@ -294,4 +308,5 @@ Render 무료 티어를 사용할 경우 서비스가 유휴 상태에서 중지
 - Vanilla JavaScript 기반 프론트엔드 구현 완료
 - 백엔드 로컬 테스트 58개 통과, 경고 1건
 - GitHub Actions 백엔드 CI 성공
-- Render/Vercel 배포 및 최종 제출 자료 정리는 진행 예정
+- Render 백엔드 배포 완료
+- Vercel 프론트엔드 배포 및 최종 제출 자료 정리는 진행 예정

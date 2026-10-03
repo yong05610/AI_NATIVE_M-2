@@ -325,12 +325,18 @@
 - [x] 기술 스택을 HTML, CSS, Vanilla JavaScript로 수정
 - [x] 프론트엔드 로컬 실행 방법을 정적 파일 실행 방식으로 수정
 - [x] 로컬 브라우저 최종 수동 검증 결과를 `TASK.md`와 `CHECKLIST.md`에 반영
-- [ ] Render 백엔드 URL 추가
+- [x] Render 백엔드 URL 추가
+  - 현재 상태: Render 서비스가 Live 상태이며 URL은 `https://ai-native-m-2.onrender.com`이다.
+- [x] 프론트엔드 기본 API 주소를 Render 백엔드 URL로 변경
+  - 적용 파일: `frontend/app.js`, `frontend/config.example.js`
+  - 기본 API 주소: `https://ai-native-m-2.onrender.com`
 - [ ] Vercel 프론트엔드 URL 추가
-- [ ] Swagger URL 추가
+  - 미완료 사유: Vercel 배포 전이며 URL이 아직 확정되지 않았다.
+- [x] Swagger URL 추가
+  - 현재 URL: `https://ai-native-m-2.onrender.com/docs`
 - [ ] 제출용 스크린샷 추가
 - [ ] `CHECKLIST.md` 최종 검증 결과 반영
-  - 현재 상태: 로컬 브라우저 수동 검증 결과는 반영했으며, 배포 URL·배포 환경 CORS·Swagger·제출용 스크린샷 검증 후 최종 완료 처리한다.
+  - 현재 상태: 로컬 브라우저 검증과 Render 배포 상태는 반영했다. Vercel 배포, 실제 Vercel Origin의 CORS, 배포 환경 최종 통합 흐름, 제출용 스크린샷 검증 후 최종 완료 처리한다.
 
 완료 기준:
 
@@ -392,16 +398,25 @@
 - [x] GitHub Actions 원격 실행 결과를 확인한다.
   - 완료 기준: GitHub의 `Backend Tests` workflow가 Python 3.12에서 compileall과 전체 pytest를 실행해 `57 passed`로 성공 완료된다.
   - 현재 상태: 원격 성공 확인 당시 테스트는 `57 passed`였고, 이후 추가된 테스트를 포함한 현재 로컬 결과는 `58 passed`다. 다음 push 또는 pull request에서 현재 테스트 수로 다시 실행된다.
-- [ ] 백엔드를 Render에 배포한다.
-  - 완료 기준: 환경변수가 Render에 설정되고 배포 URL의 `GET /`, `/docs`, Firestore 연동, OpenAI 채팅이 정상 동작한다.
+- [x] 백엔드를 Render에 배포한다.
+  - 완료 기준: Render Web Service가 Live 상태이고 공개 백엔드 URL과 Swagger URL이 확정된다.
+  - 배포 결과: 서비스 상태 Live, 백엔드 URL `https://ai-native-m-2.onrender.com`, Swagger URL `https://ai-native-m-2.onrender.com/docs`를 확인했다.
+- [x] 프론트엔드 기본 API 주소를 Render 백엔드로 변경한다.
+  - 적용 파일: `frontend/app.js`, `frontend/config.example.js`
+  - 적용 결과: 기본 API 주소가 `https://ai-native-m-2.onrender.com`을 사용한다.
 - [ ] 프론트엔드를 Vercel에 배포한다.
   - 완료 기준: Vercel 환경에서 Render API 주소를 사용하고 CORS 오류 없이 데이터 관리, 요약, AI 채팅, 대화 불러오기가 동작한다.
+  - 현재 상태: 배포 전이며 Vercel URL은 미확정이다.
+- [ ] Vercel 배포 후 Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경한다.
+  - 완료 기준: Render가 실제 Vercel 출처만 허용하고 브라우저의 API 요청에서 CORS 오류가 발생하지 않는다.
 - [ ] README에 필수 문서를 작성한다.
   - 작업 내용: 서비스 소개, 기술 스택, 프론트엔드·백엔드 API·Swagger 배포 URL, 로컬 실행 방법, 최소 환경변수 목록, Render 무료 티어의 첫 요청 지연 또는 콜드 스타트 안내를 작성한다.
   - 완료 기준: 새 개발자가 README만으로 로컬 실행과 배포 서비스 접속 방법을 이해할 수 있고 실제 비밀값은 포함되지 않는다.
+  - 현재 상태: Render 백엔드와 Swagger URL은 반영했으며 Vercel URL과 제출용 스크린샷은 아직 미완료다.
 - [ ] 제출용 스크린샷 3종을 README에 포함한다.
   - 작업 내용: 데이터 요약과 질문·답변이 보이는 채팅 화면, CRUD 중 1개 동작이 보이는 데이터 관리 화면, 불러오기 동작이 보이는 대화 기록 화면을 촬영한다.
   - 완료 기준: 각 스크린샷에서 요구 기능의 실행 결과를 식별할 수 있고 README에서 이미지가 정상 표시된다.
 - [ ] 최종 배포 및 문서 검증을 수행한다.
   - 완료 기준: Render와 Vercel URL, Swagger, 환경변수 안내, 필수 스크린샷이 모두 유효하며 PRD 성공 기준을 전부 점검했다.
+  - 남은 검증: Vercel 프론트에서 Render API 호출, 학습시간 CRUD와 요약, AI 채팅, 대화 기록 목록·상세·삭제, CORS 오류 없음, Render 무료 플랜 콜드 스타트를 확인한다.
 /resu
