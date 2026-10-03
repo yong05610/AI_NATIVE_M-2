@@ -1,5 +1,5 @@
 const configuredApiBaseUrl = window.APP_CONFIG?.API_BASE_URL;
-const API_BASE_URL = (configuredApiBaseUrl || "http://127.0.0.1:8001").replace(/\/+$/, "");
+const API_BASE_URL = (configuredApiBaseUrl || "https://ai-native-m-2.onrender.com").replace(/\/+$/, "");
 
 let editingDocumentId = null;
 let mutationInProgress = false;
