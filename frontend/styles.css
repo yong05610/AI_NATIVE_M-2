@@ -192,6 +192,11 @@ button:focus-visible {
   gap: 8px;
 }
 
+.summary-card-action {
+  cursor: pointer;
+  border-width: 2px;
+}
+
 .summary-card span {
   color: #475569;
   font-size: 14px;

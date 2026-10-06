@@ -6,6 +6,8 @@ let mutationInProgress = false;
 let activeConversationId = null;
 let chatRequestInProgress = false;
 let conversationMutationInProgress = false;
+let isStudyListVisible = false;
+let studyListLoadInProgress = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   const studyForm = document.querySelector("#study-form");
@@ -15,10 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const valueInput = document.querySelector("#study-value");
   const memoInput = document.querySelector("#study-memo");
   const chatInput = document.querySelector("#chat-message");
+  const summaryCountCard = document.querySelector("#summary-count-card");
 
   studyForm?.addEventListener("submit", handleStudySubmit);
   cancelButton?.addEventListener("click", () => cancelEdit(true));
   chatForm?.addEventListener("submit", handleChatSubmit);
+  summaryCountCard?.addEventListener("click", toggleStudyList);
+  summaryCountCard?.addEventListener("keydown", handleStudyListToggleKeydown);
 
   dateInput?.addEventListener("input", updateStudySubmitAvailability);
   valueInput?.addEventListener("input", updateStudySubmitAvailability);
@@ -79,10 +84,13 @@ function formatErrorDetail(detail) {
 
 async function refreshStudyView(successMessage = "") {
   setPageLoading(true);
-  showStatus("학습기록과 요약 통계를 불러오는 중입니다...", "loading");
+  showStatus(
+    isStudyListVisible ? "학습기록과 요약 통계를 불러오는 중입니다..." : "학습 통계를 불러오는 중입니다...",
+    "loading",
+  );
 
   const [dataResult, summaryResult] = await Promise.allSettled([
-    loadStudyData(),
+    isStudyListVisible ? loadStudyData() : Promise.resolve(),
     loadStudySummary(),
   ]);
 
@@ -99,12 +107,61 @@ async function refreshStudyView(successMessage = "") {
   }
 
   if (dataResult.status === "fulfilled" && summaryResult.status === "fulfilled") {
-    showStatus(successMessage || "학습기록과 요약 통계를 불러왔습니다.", "success");
+    const defaultMessage = isStudyListVisible
+      ? "학습기록과 요약 통계를 불러왔습니다."
+      : "학습 통계를 불러왔습니다.";
+    showStatus(successMessage || defaultMessage, "success");
   } else {
     showStatus("일부 학습 데이터를 불러오지 못했습니다. 영역별 오류 안내를 확인한 뒤 다시 시도해 주세요.", "error");
   }
 
   setPageLoading(false);
+}
+
+function handleStudyListToggleKeydown(event) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  toggleStudyList();
+}
+
+async function toggleStudyList() {
+  if (studyListLoadInProgress) {
+    return;
+  }
+
+  const dataListSection = document.querySelector("#data-list-section");
+  const summaryCountCard = document.querySelector("#summary-count-card");
+
+  if (!dataListSection || !summaryCountCard) {
+    return;
+  }
+
+  if (isStudyListVisible) {
+    isStudyListVisible = false;
+    dataListSection.hidden = true;
+    summaryCountCard.setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  isStudyListVisible = true;
+  studyListLoadInProgress = true;
+  dataListSection.hidden = false;
+  summaryCountCard.setAttribute("aria-expanded", "true");
+
+  try {
+    await loadStudyData();
+    showStatus("최신 학습기록을 불러왔습니다.", "success");
+  } catch (error) {
+    const message = getErrorMessage(error);
+    renderStudyListError(message);
+    showAreaFeedback("#study-list-feedback", `학습시간 데이터 오류: ${message}`, "error");
+    showStatus(`학습기록을 불러오지 못했습니다. ${message}`, "error");
+  } finally {
+    studyListLoadInProgress = false;
+  }
 }
 
 async function loadStudyData() {

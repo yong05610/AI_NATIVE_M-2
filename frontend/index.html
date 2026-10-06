@@ -53,7 +53,16 @@
       <p id="summary-feedback" class="section-feedback" role="status" aria-live="polite" hidden></p>
 
       <div id="summary-content" class="summary-grid" aria-live="polite">
-        <div class="summary-card"><span>전체 기록 수</span><strong id="summary-count">0개</strong></div>
+        <div
+          id="summary-count-card"
+          class="summary-card summary-card-action"
+          role="button"
+          tabindex="0"
+          aria-controls="data-list-section"
+          aria-expanded="false"
+        >
+          <span>전체 기록 수</span><strong id="summary-count">0개</strong>
+        </div>
         <div class="summary-card"><span>총 학습시간</span><strong id="summary-total">0분</strong></div>
         <div class="summary-card"><span>평균 학습시간</span><strong id="summary-average">0분</strong></div>
         <div class="summary-card"><span>최대 학습시간</span><strong id="summary-max">0분</strong></div>
@@ -63,7 +72,7 @@
       </div>
     </section>
 
-    <section id="data-list-section" class="panel">
+    <section id="data-list-section" class="panel" hidden>
       <h2>학습기록 목록</h2>
 
       <p id="study-list-feedback" class="section-feedback" role="status" aria-live="polite" hidden></p>

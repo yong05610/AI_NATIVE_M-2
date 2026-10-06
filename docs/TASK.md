@@ -160,18 +160,22 @@
 - [x] 삭제 버튼
 - [x] 등록, 수정, 삭제 후 목록과 요약 갱신
 - [x] API 실패 시 사용자 오류 메시지 표시
+- [x] 전체 기록 수 카드로 학습기록 목록 표시·숨김 전환
+- [x] 목록을 열 때마다 최신 학습기록 조회
+- [x] 마우스와 Enter·Space 키보드 조작 지원
 
 구현 결과:
 
 - `window.APP_CONFIG.API_BASE_URL` 설정을 지원한다.
-- API Base URL이 설정되지 않았을 때 `http://127.0.0.1:8001`을 기본값으로 사용한다.
-- 페이지 로드 시 학습기록 목록과 학습 통계 요약을 조회한다.
+- API Base URL이 설정되지 않았을 때 `https://ai-native-m-2.onrender.com`을 기본값으로 사용한다.
+- 페이지 로드 시 학습 통계 요약만 조회하고 학습기록 목록은 숨긴다.
+- 전체 기록 수 카드를 선택하면 `GET /api/data`로 최신 목록을 조회해 기존 위치에 표시하고, 다시 선택하면 숨긴다.
 - 학습시간 등록 기능을 구현했다.
 - 학습시간 수정 기능을 구현했다.
 - 수정 버튼 클릭 시 기존 날짜, 학습시간, 메모가 입력 폼에 채워진다.
 - 수정 취소 기능을 구현했다.
 - 학습시간 삭제 기능을 구현했다.
-- 등록, 수정, 삭제 성공 후 목록과 요약을 다시 조회한다.
+- 등록, 수정, 삭제 성공 후 요약을 다시 조회하며 목록이 열려 있으면 목록도 다시 조회한다.
 - 로딩 상태, 오류 메시지, 빈 목록 안내를 표시한다.
 - 처리 중 버튼 비활성화로 중복 클릭을 방지한다.
 - `recent_trend` 값을 한국어로 표시한다.
@@ -207,7 +211,9 @@
 
 완료 기준:
 
-- 페이지 로드 시 학습기록 목록과 요약이 표시된다.
+- 페이지 로드 시 요약은 표시되고 학습기록 목록은 숨겨진다.
+- 전체 기록 수 카드를 클릭하거나 Enter·Space 키로 선택할 때 목록이 기존 위치에서 토글된다.
+- 목록을 열 때마다 `GET /api/data`가 호출되어 최신 데이터가 표시된다.
 - 등록 성공 후 폼이 초기화되고 목록과 요약이 갱신된다.
 - 수정 버튼 클릭 시 기존 날짜, 학습시간, 메모가 입력 폼에 채워진다.
 - 수정 저장 시 `PUT /api/data/{document_id}`가 호출된다.
@@ -330,13 +336,25 @@
 - [x] 프론트엔드 기본 API 주소를 Render 백엔드 URL로 변경
   - 적용 파일: `frontend/app.js`, `frontend/config.example.js`
   - 기본 API 주소: `https://ai-native-m-2.onrender.com`
-- [ ] Vercel 프론트엔드 URL 추가
-  - 미완료 사유: Vercel 배포 전이며 URL이 아직 확정되지 않았다.
+- [x] Vercel 프론트엔드 URL 추가
+  - 현재 상태: Vercel 배포 상태는 `READY`이며 URL은 `https://frontend-sigma-rouge-14.vercel.app`이다.
 - [x] Swagger URL 추가
   - 현재 URL: `https://ai-native-m-2.onrender.com/docs`
+- [x] Vercel 로컬 메타데이터를 Git 추적에서 제외
+  - 적용 결과: `frontend/.gitignore`에 `.vercel` 규칙을 추가했다.
 - [ ] 제출용 스크린샷 추가
 - [ ] `CHECKLIST.md` 최종 검증 결과 반영
-  - 현재 상태: 로컬 브라우저 검증과 Render 배포 상태는 반영했다. Vercel 배포, 실제 Vercel Origin의 CORS, 배포 환경 최종 통합 흐름, 제출용 스크린샷 검증 후 최종 완료 처리한다.
+  - 현재 상태: 로컬 브라우저 검증, Render·Vercel 배포, 실제 Vercel Origin의 CORS 및 확인된 통합 기능을 반영했다. 대화 삭제 실행과 제출용 스크린샷 등 남은 항목 검증 후 최종 완료 처리한다.
+
+현재 배포 기능 검증:
+
+- [x] CORS 설정 완료: 실제 Vercel Origin의 GET·POST 프리플라이트 HTTP 200
+- [x] 학습기록 CRUD 검증 완료
+- [x] 학습 통계 요약 표시 및 CRUD 후 갱신 확인
+- [x] AI 질의응답 정상 작동 확인
+- [x] AI 답변이 최신 학습기록과 통계를 반영하는 것 확인
+- [x] AI 대화 기록 저장 및 목록 조회 확인
+- [x] AI 대화 기록 삭제 버튼 표시 확인
 
 완료 기준:
 
@@ -391,7 +409,7 @@
 - [x] 백엔드 mock 기반 자동 테스트를 구성한다.
   - 작업 내용: Chat, 학습시간 데이터, 대화 기록, Firestore 서비스, Firebase core, health/root 라우터를 실제 외부 호출 없이 검증한다.
   - 완료 기준: Python 3.12 로컬 환경에서 `python -m pytest tests -v` 실행 결과가 `58 passed`이며 실제 Firebase, Firestore, OpenAI 요청이 발생하지 않는다.
-  - 최신 검증 결과: Python 3.12.10 프로젝트 가상환경에서 전체 테스트 `58 passed`를 확인했다.
+  - 최신 검증 결과: Python 3.12.10 프로젝트 가상환경에서 전체 테스트 `58 passed, 1 warning`을 확인했다.
 - [x] GitHub Actions 백엔드 CI를 구성한다.
   - 작업 내용: `.github/workflows/backend-tests.yml`에서 Python 3.12 의존성 설치, compileall, pytest를 실행한다.
   - 완료 기준: `main` 브랜치 push 및 `main` 대상 pull request에서 workflow가 시작되도록 설정되어 있고 로컬에서 동일 검증 명령이 통과한다.
@@ -404,19 +422,20 @@
 - [x] 프론트엔드 기본 API 주소를 Render 백엔드로 변경한다.
   - 적용 파일: `frontend/app.js`, `frontend/config.example.js`
   - 적용 결과: 기본 API 주소가 `https://ai-native-m-2.onrender.com`을 사용한다.
-- [ ] 프론트엔드를 Vercel에 배포한다.
-  - 완료 기준: Vercel 환경에서 Render API 주소를 사용하고 CORS 오류 없이 데이터 관리, 요약, AI 채팅, 대화 불러오기가 동작한다.
-  - 현재 상태: 배포 전이며 Vercel URL은 미확정이다.
-- [ ] Vercel 배포 후 Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경한다.
+- [x] 프론트엔드를 Vercel에 배포한다.
+  - 완료 기준: Vercel 프로덕션 배포가 `READY` 상태이고 정적 자산이 공개 URL에서 정상 응답한다.
+  - 배포 결과: `https://frontend-sigma-rouge-14.vercel.app`의 `/`, `/app.js`, `/styles.css`가 HTTP 200을 반환하고 배포된 `app.js`가 Render API 주소를 사용한다.
+- [x] Vercel 배포 후 Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경한다.
   - 완료 기준: Render가 실제 Vercel 출처만 허용하고 브라우저의 API 요청에서 CORS 오류가 발생하지 않는다.
-- [ ] README에 필수 문서를 작성한다.
+  - 검증 결과: `https://frontend-sigma-rouge-14.vercel.app` Origin의 GET·POST 프리플라이트가 HTTP 200을 반환하고 `Access-Control-Allow-Origin`도 같은 Origin으로 확인됐다.
+- [x] README에 필수 문서를 작성한다.
   - 작업 내용: 서비스 소개, 기술 스택, 프론트엔드·백엔드 API·Swagger 배포 URL, 로컬 실행 방법, 최소 환경변수 목록, Render 무료 티어의 첫 요청 지연 또는 콜드 스타트 안내를 작성한다.
   - 완료 기준: 새 개발자가 README만으로 로컬 실행과 배포 서비스 접속 방법을 이해할 수 있고 실제 비밀값은 포함되지 않는다.
-  - 현재 상태: Render 백엔드와 Swagger URL은 반영했으며 Vercel URL과 제출용 스크린샷은 아직 미완료다.
+  - 현재 상태: Render 백엔드, Swagger, Vercel 프론트엔드 URL과 현재 CORS 상태를 반영했다. 제출용 스크린샷은 별도 미완료 항목으로 유지한다.
 - [ ] 제출용 스크린샷 3종을 README에 포함한다.
   - 작업 내용: 데이터 요약과 질문·답변이 보이는 채팅 화면, CRUD 중 1개 동작이 보이는 데이터 관리 화면, 불러오기 동작이 보이는 대화 기록 화면을 촬영한다.
   - 완료 기준: 각 스크린샷에서 요구 기능의 실행 결과를 식별할 수 있고 README에서 이미지가 정상 표시된다.
 - [ ] 최종 배포 및 문서 검증을 수행한다.
   - 완료 기준: Render와 Vercel URL, Swagger, 환경변수 안내, 필수 스크린샷이 모두 유효하며 PRD 성공 기준을 전부 점검했다.
-  - 남은 검증: Vercel 프론트에서 Render API 호출, 학습시간 CRUD와 요약, AI 채팅, 대화 기록 목록·상세·삭제, CORS 오류 없음, Render 무료 플랜 콜드 스타트를 확인한다.
-/resu
+  - 현재 상태: Vercel의 Render API 호출, 학습시간 CRUD와 요약, AI 채팅, 최신 학습 데이터 반영, 대화 저장·목록 및 CORS는 확인했다.
+  - 남은 검증: 배포 화면의 대화 상세·삭제 실행과 필수 스크린샷을 확인한다.

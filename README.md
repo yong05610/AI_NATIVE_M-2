@@ -45,6 +45,137 @@ HTML, CSS, Vanilla JavaScript 기반 정적 화면에서 학습시간과 대화�
 └── README.md
 ```
 
+## 시스템 설계
+
+### 모듈 및 API 연계 구조도
+
+```mermaid
+flowchart LR
+    U[사용자 브라우저]
+    CLIENT[Swagger · API 클라이언트]
+
+    subgraph V[Vercel · 정적 프론트엔드]
+        UI[index.html · styles.css]
+        APP[app.js · Fetch API]
+        UI --> APP
+    end
+
+    subgraph R[Render · FastAPI 백엔드]
+        MAIN[main.py]
+        HR[health router]
+        DR[study_data router]
+        CR[chat router]
+        CNR[conversations router]
+        DS[study_data_service]
+        CS[chat_service]
+        CNS[conversation_service]
+        FSS[firestore_service]
+        CFG[core config · firebase · exceptions]
+
+        MAIN --> HR
+        MAIN --> DR
+        MAIN --> CR
+        MAIN --> CNR
+        HR --> FSS
+        DR --> DS
+        CR --> CS
+        CNR --> CNS
+        DS --> FSS
+        CNS --> FSS
+        CS --> DS
+        CS --> CNS
+        FSS --> CFG
+    end
+
+    DATA[(Firestore data 컬렉션)]
+    CONV[(Firestore conversations 컬렉션)]
+    OPENAI[OpenAI API]
+
+    U --> UI
+    APP -->|GET / · GET /api/health/firestore| HR
+    APP -->|GET·POST /api/data<br/>PUT·DELETE /api/data/document_id<br/>GET /api/data/summary| DR
+    APP -->|POST /api/chat| CR
+    APP -->|GET /api/conversations<br/>GET·DELETE /api/conversations/document_id| CNR
+    CLIENT -->|POST /api/conversations| CNR
+    FSS --> DATA
+    FSS --> CONV
+    CS -->|학습 요약·최근 기록 기반 프롬프트| OPENAI
+    OPENAI -->|AI 답변| CS
+```
+
+프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 AI 답변을 생성한 뒤 `conversation_service`를 통해 질문·답변 한 쌍을 자동 저장하므로 대화가 중복 저장되지 않습니다.
+
+### 데이터 흐름도 DFD
+
+```mermaid
+flowchart LR
+    USER[외부 개체 · 사용자]
+    OPENAI[외부 개체 · OpenAI API]
+    UI((P1 · 화면 및 입력 처리))
+    STUDY((P2 · 학습기록 CRUD 및 요약))
+    CHAT((P3 · AI 학습 코칭))
+    HISTORY((P4 · 대화 기록 관리))
+    DATA[(D1 · data)]
+    CONV[(D2 · conversations)]
+
+    USER -->|학습시간 입력·목록 토글·질문| UI
+    UI -->|CRUD 및 요약 요청| STUDY
+    STUDY -->|생성·조회·수정·삭제| DATA
+    DATA -->|학습기록| STUDY
+    STUDY -->|목록·요약·처리 결과| UI
+
+    UI -->|사용자 질문| CHAT
+    DATA -->|요약 통계·최근 기록| CHAT
+    CHAT -->|학습 데이터와 질문| OPENAI
+    OPENAI -->|AI 답변| CHAT
+    CHAT -->|질문·답변 자동 저장| CONV
+    CHAT -->|질문·답변 표시| UI
+
+    UI -->|목록·상세·삭제 요청| HISTORY
+    HISTORY -->|조회·삭제| CONV
+    CONV -->|대화 기록| HISTORY
+    HISTORY -->|목록·상세·삭제 결과| UI
+    UI -->|화면 결과| USER
+```
+
+### 화면 상태전이도
+
+```mermaid
+stateDiagram-v2
+    [*] --> 초기로딩
+    초기로딩 --> 요약표시_목록숨김: 요약·대화 목록 조회 완료
+
+    요약표시_목록숨김 --> 목록조회중: 전체 기록 수 클릭·Enter·Space
+    목록조회중 --> 목록표시: GET /api/data 성공
+    목록조회중 --> 목록오류: GET /api/data 실패
+    목록표시 --> 요약표시_목록숨김: 전체 기록 수 다시 선택
+    목록오류 --> 요약표시_목록숨김: 전체 기록 수 다시 선택
+    목록오류 --> 목록조회중: 숨긴 뒤 다시 선택
+
+    요약표시_목록숨김 --> 데이터저장중: 학습기록 등록
+    목록표시 --> 수정입력: 수정 버튼
+    수정입력 --> 데이터저장중: 수정 저장
+    목록표시 --> 데이터삭제중: 삭제 확인
+    데이터저장중 --> 요약표시_목록숨김: 성공·목록이 닫힌 상태
+    데이터저장중 --> 목록표시: 성공·목록이 열린 상태
+    데이터삭제중 --> 목록표시: 성공·목록 및 요약 갱신
+    데이터저장중 --> 입력오류: 검증·API 실패
+    데이터삭제중 --> 목록오류: API 실패
+    입력오류 --> 요약표시_목록숨김: 입력 수정·재시도
+
+    요약표시_목록숨김 --> AI응답대기: 질문 전송
+    목록표시 --> AI응답대기: 질문 전송
+    AI응답대기 --> AI답변표시: POST /api/chat 성공·대화 자동 저장
+    AI응답대기 --> AI오류: POST /api/chat 실패
+    AI답변표시 --> 이전대화복원: 대화 기록 선택
+    이전대화복원 --> AI답변표시: 상세 조회 성공
+    AI답변표시 --> 대화삭제중: 대화 삭제 확인
+    대화삭제중 --> 요약표시_목록숨김: 삭제 성공·목록 갱신
+    AI오류 --> AI응답대기: 질문 재전송
+```
+
+상태전이도에서 학습기록 목록은 초기 화면에 표시되지 않습니다. 전체 기록 수 카드를 선택할 때마다 최신 목록을 다시 조회하며, 목록이 열린 상태의 등록·수정·삭제 후에는 목록과 요약을 함께 갱신합니다.
+
 ## Python 버전 정책
 
 - 권장 및 로컬 검증: Python 3.12.x
@@ -62,7 +193,7 @@ HTML, CSS, Vanilla JavaScript 기반 정적 화면에서 학습시간과 대화�
 - `FIREBASE_PROJECT_ID` — 필수, 백엔드 전용
 - `FIREBASE_CLIENT_EMAIL` — 필수, 백엔드 전용
 - `FIREBASE_PRIVATE_KEY` — 필수, 백엔드 전용
-- `FRONTEND_ORIGIN` — 선택 사항. 로컬 기본 허용 출처는 `http://127.0.0.1:5500`이며, 배포 후 실제 Vercel Origin으로 설정합니다.
+- `FRONTEND_ORIGIN` — 선택 사항. 로컬 기본 허용 출처는 `http://127.0.0.1:5500`입니다. Render 배포 환경에서는 실제 Vercel Origin인 `https://frontend-sigma-rouge-14.vercel.app`으로 설정해야 합니다.
 
 실제 OpenAI API 키, Firebase 개인키, 서비스 계정 정보 등 비밀값은 README, 소스 코드, 프론트엔드 코드, Git 저장소에 포함하지 않습니다.
 
@@ -260,25 +391,29 @@ Render 무료 티어를 사용할 경우 서비스가 유휴 상태에서 중지
 
 ## 배포 상태
 
-Render 백엔드 배포는 완료되었으며, Vercel 프론트엔드는 배포 예정으로 URL이 아직 확정되지 않았습니다.
+Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 Vercel Origin의 CORS 프리플라이트도 정상 동작합니다.
 
 - 백엔드 배포 상태: 완료
 - Render 서비스 상태: Live
 - Render 백엔드 URL: https://ai-native-m-2.onrender.com
 - Swagger URL: https://ai-native-m-2.onrender.com/docs
-- 프론트엔드 배포 상태: 진행 예정
-- Vercel 프론트엔드 URL: 미확정
+- 프론트엔드 배포 상태: 완료 (`READY`)
+- Vercel 프론트엔드 URL: https://frontend-sigma-rouge-14.vercel.app
 
 프론트엔드의 기본 API 주소는 `https://ai-native-m-2.onrender.com`으로 설정되어 있습니다. 관련 설정 파일은 `frontend/app.js`와 `frontend/config.example.js`입니다.
 
-Vercel 배포 후에는 다음 작업을 완료해야 합니다.
+배포 검증 결과는 다음과 같습니다.
 
-- README에 실제 Vercel 프론트엔드 URL 추가
-- Render의 `FRONTEND_ORIGIN`을 실제 Vercel Origin으로 변경
-- Vercel 프론트엔드에서 Render API를 사용한 학습시간 CRUD 및 요약 조회 확인
-- AI 채팅과 대화 기록 목록·상세·삭제 확인
-- 브라우저 Console과 Network에서 CORS 오류가 없는지 확인
-- Render 무료 플랜의 첫 요청 콜드 스타트를 고려해 최종 통합 흐름 재검증
+- Render의 `/`, `/docs`, `/api/health/firestore`, `/api/data`, `/api/data/summary`, `/api/conversations`: HTTP 200
+- Vercel의 `/`, `/app.js`, `/styles.css`: HTTP 200
+- 배포된 `app.js`: Render 백엔드 URL 사용 확인
+- Vercel CLI 로컬 메타데이터: `frontend/.gitignore`의 `.vercel` 규칙으로 Git 추적 제외
+- CORS: Vercel Origin의 GET·POST 프리플라이트가 HTTP 200이며 `Access-Control-Allow-Origin`이 실제 Vercel Origin과 일치
+
+최종 완료 전에는 다음 작업이 남아 있습니다.
+
+- 새 학습기록 목록 토글을 실제 브라우저에서 클릭·키보드로 최종 확인
+- 대화 기록 상세·삭제 동작 최종 확인
 
 ## 제출용 스크린샷
 
@@ -309,4 +444,5 @@ Vercel 배포 후에는 다음 작업을 완료해야 합니다.
 - 백엔드 로컬 테스트 58개 통과, 경고 1건
 - GitHub Actions 백엔드 CI 성공
 - Render 백엔드 배포 완료
-- Vercel 프론트엔드 배포 및 최종 제출 자료 정리는 진행 예정
+- Vercel 프론트엔드 배포 완료
+- 새 목록 토글의 브라우저 수동 검증과 최종 제출 자료 정리는 진행 예정
