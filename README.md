@@ -105,6 +105,100 @@ flowchart LR
 
 프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 AI 답변을 생성한 뒤 `conversation_service`를 통해 질문·답변 한 쌍을 자동 저장하므로 대화가 중복 저장되지 않습니다.
 
+### 상세 구조도 2 · 배포 및 요청 처리
+
+아래 구조도의 실선 화살표는 호출·의존 방향을 나타냅니다. 점선은 화면 스타일 적용이나 Swagger의 테스트 호출처럼 보조적인 연결을 나타냅니다.
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 42, "rankSpacing": 68, "curve": "basis"}}}%%
+flowchart LR
+    subgraph ACTOR[사용자 및 개발자]
+        direction TB
+        USER[서비스 사용자]
+        TESTER[개발자 · API 테스터]
+    end
+
+    subgraph FRONT[Vercel · 정적 프론트엔드]
+        direction TB
+        HTML[index.html<br/>화면 구조 · 접근성 속성]
+        CSS[styles.css<br/>레이아웃 · 기존 UI 스타일]
+        JS[app.js<br/>화면 상태 · Fetch API · DOM 갱신]
+        CONFIG[config.example.js<br/>API Base URL 재정의 예시]
+
+        HTML --> JS
+        CSS -. 스타일 적용 .-> HTML
+        CONFIG -. 선택적 설정 .-> JS
+    end
+
+    subgraph ENTRY[Render · FastAPI 진입 계층]
+        direction TB
+        MAIN[main.py<br/>앱 생성 · Router 등록<br/>CORS · 예외 처리]
+        SWAGGER[/docs<br/>Swagger UI · OpenAPI]
+        MAIN -->|OpenAPI 문서 제공| SWAGGER
+    end
+
+    subgraph ROUTER[API Router 계층]
+        direction TB
+        HEALTH_R[health router<br/>GET /<br/>GET /api/health/firestore]
+        DATA_R[study_data router<br/>GET·POST /api/data<br/>PUT·DELETE /api/data/document_id<br/>GET /api/data/summary]
+        CHAT_R[chat router<br/>POST /api/chat]
+        CONV_R[conversations router<br/>GET·POST /api/conversations<br/>GET·DELETE /api/conversations/document_id]
+    end
+
+    subgraph SERVICE[비즈니스 Service 계층]
+        direction TB
+        DATA_S[study_data_service<br/>CRUD · 요약 · 최근 추세]
+        CHAT_S[chat_service<br/>학습 컨텍스트 구성 · AI 호출]
+        CONV_S[conversation_service<br/>대화 저장 · 목록 · 상세 · 삭제]
+        FS_S[firestore_service<br/>컬렉션 참조 · 연결 확인]
+    end
+
+    subgraph SUPPORT[공통 모듈]
+        direction TB
+        MODELS[Pydantic models<br/>study_data · chat · conversation · common]
+        CORE[core<br/>config · firebase · exceptions]
+    end
+
+    subgraph EXTERNAL[외부 시스템 및 저장소]
+        direction TB
+        DATA_DB[(Firestore<br/>data 컬렉션)]
+        CONV_DB[(Firestore<br/>conversations 컬렉션)]
+        OPENAI[OpenAI API<br/>AI 학습 코칭 답변 생성]
+    end
+
+    USER -->|화면 조작| HTML
+    TESTER -->|GET /docs| MAIN
+    SWAGGER -. Try it out API 호출 .-> MAIN
+    JS -->|HTTPS Fetch · JSON| MAIN
+
+    MAIN --> HEALTH_R
+    MAIN --> DATA_R
+    MAIN --> CHAT_R
+    MAIN --> CONV_R
+
+    HEALTH_R --> FS_S
+    DATA_R --> DATA_S
+    CHAT_R --> CHAT_S
+    CONV_R --> CONV_S
+    HEALTH_R --> MODELS
+    DATA_R --> MODELS
+    CHAT_R --> MODELS
+    CONV_R --> MODELS
+
+    DATA_S --> FS_S
+    CONV_S --> FS_S
+    CHAT_S -->|최신 기록·요약 조회| DATA_S
+    CHAT_S -->|질문·답변 자동 저장| CONV_S
+    FS_S --> CORE
+
+    FS_S --> DATA_DB
+    FS_S --> CONV_DB
+    CHAT_S -->|학습 데이터 기반 프롬프트| OPENAI
+    OPENAI -->|AI 답변| CHAT_S
+```
+
+구조도 2는 왼쪽에서 오른쪽으로 `사용자 → 프론트엔드 → FastAPI 진입점 → Router → Service → 외부 시스템` 순서로 읽습니다. API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면 상태와 목록·요약·대화 영역을 갱신합니다.
+
 ### 데이터 흐름도 DFD
 
 ```mermaid
