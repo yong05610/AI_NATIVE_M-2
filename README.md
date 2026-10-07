@@ -153,34 +153,36 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    USER[외부 개체 · 사용자]
-    OPENAI[외부 개체 · OpenAI API]
-    UI((P1 · 화면 및 입력 처리))
-    STUDY((P2 · 학습기록 CRUD 및 요약))
-    CHAT((P3 · AI 학습 코칭))
-    HISTORY((P4 · 대화 기록 관리))
-    DATA[(D1 · data)]
-    CONV[(D2 · conversations)]
+    subgraph ACCESS["1. 사용자 및 화면"]
+        direction TB
+        USER["외부 개체<br/>사용자"]
+        UI(("P1<br/>화면 및 입력 처리"))
 
-    USER -->|학습시간 입력·목록 토글·질문| UI
-    UI -->|CRUD 및 요약 요청| STUDY
-    STUDY -->|생성·조회·수정·삭제| DATA
-    DATA -->|학습기록| STUDY
-    STUDY -->|목록·요약·처리 결과| UI
+        USER -->|"학습시간 입력 / 목록 토글 / 질문"| UI
+        UI -->|"목록 / 요약 / 답변 표시"| USER
+    end
 
-    UI -->|사용자 질문| CHAT
-    DATA -->|요약 통계·최근 기록| CHAT
-    CHAT -->|학습 데이터와 질문| OPENAI
-    OPENAI -->|AI 답변| CHAT
-    CHAT -->|질문·답변 자동 저장| CONV
-    CHAT -->|질문·답변 표시| UI
+    subgraph PROCESS["2. 백엔드 처리 프로세스"]
+        direction TB
+        STUDY(("P2<br/>학습기록 CRUD 및 요약"))
+        CHAT(("P3<br/>AI 학습 코칭"))
+        HISTORY(("P4<br/>대화 기록 관리"))
+    end
 
-    UI -->|목록·상세·삭제 요청| HISTORY
-    HISTORY -->|조회·삭제| CONV
-    CONV -->|대화 기록| HISTORY
-    HISTORY -->|목록·상세·삭제 결과| UI
-    UI -->|화면 결과| USER
+    subgraph RESOURCE["3. 저장소 및 외부 서비스"]
+        direction TB
+        DATA[("D1<br/>Firestore data")]
+        OPENAI["외부 개체<br/>OpenAI API"]
+        CONV[("D2<br/>Firestore conversations")]
+    end
+
+    ACCESS -->|"CRUD / 요약 / 질문 / 대화 요청"| PROCESS
+    PROCESS -->|"데이터 변경 / AI 요청 / 대화 저장·조회"| RESOURCE
+    RESOURCE -->|"학습기록 / AI 답변 / 대화 기록"| PROCESS
+    PROCESS -->|"목록 / 요약 / 답변 / 처리 결과"| ACCESS
 ```
+
+기본 DFD는 세 영역을 좌우로 배치한 장방형 요약도입니다. 바로 아래 DFD 2에서는 같은 흐름을 개별 요청과 응답 단위로 더 자세히 확인할 수 있습니다.
 
 ### 데이터 흐름도 DFD 2 · 세로 배치 비교안
 
