@@ -110,93 +110,44 @@ flowchart LR
 아래 구조도의 화살표는 호출·의존 방향을 나타냅니다. API 응답은 호출 경로의 역방향으로 반환됩니다.
 
 ```mermaid
-flowchart TB
-    subgraph ACTOR["1. 사용자 및 개발자"]
-        direction LR
-        USER["서비스 사용자"]
-        TESTER["개발자 / API 테스터"]
-    end
-
-    subgraph FRONT["2. Vercel 정적 프론트엔드"]
-        direction LR
-        HTML["index.html<br/>화면 구조와 접근성"]
-        CSS["styles.css<br/>레이아웃과 UI 스타일"]
-        JS["app.js<br/>화면 상태 / Fetch API / DOM 갱신"]
-        CONFIG["config.example.js<br/>API Base URL 설정 예시"]
-
-        CSS --> HTML
-        HTML --> JS
-        CONFIG --> JS
-    end
-
-    subgraph ENTRY["3. Render FastAPI 진입 계층"]
-        direction LR
-        MAIN["main.py<br/>앱 생성 / Router 등록<br/>CORS / 예외 처리"]
-        SWAGGER["Swagger UI<br/>GET /docs / OpenAPI"]
-        MAIN -->|"OpenAPI 문서 제공"| SWAGGER
-    end
-
-    subgraph ROUTER["4. API Router 계층"]
+flowchart LR
+    subgraph ACCESS["1. 접속 및 배포"]
         direction TB
-        HEALTH_R["health router<br/>GET /<br/>GET /api/health/firestore"]
-        DATA_R["study_data router<br/>GET / POST /api/data<br/>PUT / DELETE /api/data/:id<br/>GET /api/data/summary"]
-        CHAT_R["chat router<br/>POST /api/chat"]
-        CONV_R["conversations router<br/>GET / POST /api/conversations<br/>GET / DELETE /api/conversations/:id"]
+        ACTOR["사용자 / API 테스터"]
+        FRONT["Vercel 정적 프론트엔드<br/>index.html / styles.css<br/>app.js / config.example.js"]
+        ENTRY["Render FastAPI 진입점<br/>main.py / CORS / 예외 처리<br/>Swagger UI / OpenAPI"]
+
+        ACTOR -->|"화면 조작"| FRONT
+        ACTOR -->|"GET /docs"| ENTRY
+        FRONT -->|"HTTPS Fetch / JSON"| ENTRY
     end
 
-    subgraph SERVICE["5. 비즈니스 Service 계층"]
+    subgraph APPLICATION["2. FastAPI 애플리케이션"]
         direction TB
-        DATA_S["study_data_service<br/>CRUD / 요약 / 최근 추세"]
-        CHAT_S["chat_service<br/>학습 컨텍스트 구성 / AI 호출"]
-        CONV_S["conversation_service<br/>대화 저장 / 목록 / 상세 / 삭제"]
-        FS_S["firestore_service<br/>컬렉션 참조 / 연결 확인"]
+        ROUTERS["Router 계층<br/>health / study_data<br/>chat / conversations"]
+        APIS["주요 API<br/>/api/data / /api/data/summary<br/>/api/chat / /api/conversations"]
+        SERVICES["Service 계층<br/>학습기록 CRUD와 요약<br/>AI 코칭 / 대화 기록 관리"]
+        SUPPORT["공통 모듈<br/>Pydantic models<br/>config / firebase / exceptions"]
+
+        APIS --> ROUTERS
+        ROUTERS --> SERVICES
+        SERVICES --> SUPPORT
     end
 
-    subgraph SUPPORT["6. 공통 모듈"]
-        direction LR
-        MODELS["Pydantic models<br/>study_data / chat / conversation / common"]
-        CORE["core<br/>config / firebase / exceptions"]
-    end
-
-    subgraph EXTERNAL["7. 외부 시스템 및 저장소"]
-        direction LR
+    subgraph RESOURCES["3. 데이터 및 외부 서비스"]
+        direction TB
         DATA_DB[("Firestore<br/>data 컬렉션")]
         CONV_DB[("Firestore<br/>conversations 컬렉션")]
-        OPENAI["OpenAI API<br/>AI 학습 코칭 답변 생성"]
+        OPENAI["OpenAI API<br/>학습 데이터 기반 답변 생성"]
     end
 
-    USER -->|"화면 조작"| HTML
-    TESTER -->|"GET /docs"| MAIN
-    SWAGGER -->|"Try it out API 호출"| MAIN
-    JS -->|"HTTPS Fetch / JSON"| MAIN
-
-    MAIN --> HEALTH_R
-    MAIN --> DATA_R
-    MAIN --> CHAT_R
-    MAIN --> CONV_R
-
-    HEALTH_R --> FS_S
-    DATA_R --> DATA_S
-    CHAT_R --> CHAT_S
-    CONV_R --> CONV_S
-    HEALTH_R --> MODELS
-    DATA_R --> MODELS
-    CHAT_R --> MODELS
-    CONV_R --> MODELS
-
-    DATA_S --> FS_S
-    CONV_S --> FS_S
-    CHAT_S -->|"최신 기록과 요약 조회"| DATA_S
-    CHAT_S -->|"질문과 답변 자동 저장"| CONV_S
-    FS_S --> CORE
-
-    FS_S --> DATA_DB
-    FS_S --> CONV_DB
-    CHAT_S -->|"학습 데이터 기반 프롬프트"| OPENAI
-    OPENAI -->|"AI 답변"| CHAT_S
+    ACCESS -->|"API 호출"| APPLICATION
+    APPLICATION -->|"저장 / 조회"| DATA_DB
+    APPLICATION -->|"대화 자동 저장"| CONV_DB
+    APPLICATION -->|"프롬프트 / AI 답변"| OPENAI
 ```
 
-구조도 2는 위에서 아래로 `사용자 → 프론트엔드 → FastAPI 진입점 → Router → Service → 공통 모듈·외부 시스템` 순서로 읽습니다. Router와 Service 노드를 세로로 쌓아 가로 폭을 줄였으며, API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면 상태와 목록·요약·대화 영역을 갱신합니다.
+구조도 2는 왼쪽에서 오른쪽으로 `접속·배포 → FastAPI 애플리케이션 → 데이터·외부 서비스` 순서로 읽습니다. 세부 모듈을 세 묶음으로 압축해 지나치게 길어지는 문제를 줄였으며, API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면을 갱신합니다.
 
 ### 데이터 흐름도 DFD
 
