@@ -47,67 +47,9 @@ HTML, CSS, Vanilla JavaScript 기반 정적 화면에서 학습시간과 대화�
 
 ## 시스템 설계
 
-### 모듈 및 API 연계 구조도
+### 시스템 구조도
 
-```mermaid
-flowchart LR
-    U[사용자 브라우저]
-    CLIENT[Swagger · API 클라이언트]
-
-    subgraph V[Vercel · 정적 프론트엔드]
-        UI[index.html · styles.css]
-        APP[app.js · Fetch API]
-        UI --> APP
-    end
-
-    subgraph R[Render · FastAPI 백엔드]
-        MAIN[main.py]
-        HR[health router]
-        DR[study_data router]
-        CR[chat router]
-        CNR[conversations router]
-        DS[study_data_service]
-        CS[chat_service]
-        CNS[conversation_service]
-        FSS[firestore_service]
-        CFG[core config · firebase · exceptions]
-
-        MAIN --> HR
-        MAIN --> DR
-        MAIN --> CR
-        MAIN --> CNR
-        HR --> FSS
-        DR --> DS
-        CR --> CS
-        CNR --> CNS
-        DS --> FSS
-        CNS --> FSS
-        CS --> DS
-        CS --> CNS
-        FSS --> CFG
-    end
-
-    DATA[(Firestore data 컬렉션)]
-    CONV[(Firestore conversations 컬렉션)]
-    OPENAI[OpenAI API]
-
-    U --> UI
-    APP -->|GET / · GET /api/health/firestore| HR
-    APP -->|GET·POST /api/data<br/>PUT·DELETE /api/data/document_id<br/>GET /api/data/summary| DR
-    APP -->|POST /api/chat| CR
-    APP -->|GET /api/conversations<br/>GET·DELETE /api/conversations/document_id| CNR
-    CLIENT -->|POST /api/conversations| CNR
-    FSS --> DATA
-    FSS --> CONV
-    CS -->|학습 요약·최근 기록 기반 프롬프트| OPENAI
-    OPENAI -->|AI 답변| CS
-```
-
-프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 AI 답변을 생성한 뒤 `conversation_service`를 통해 질문·답변 한 쌍을 자동 저장하므로 대화가 중복 저장되지 않습니다.
-
-### 상세 구조도 2 · 배포 및 요청 처리
-
-아래 구조도의 화살표는 호출·의존 방향을 나타냅니다. API 응답은 호출 경로의 역방향으로 반환됩니다.
+배포 위치와 주요 모듈, API 처리 계층 및 외부 서비스의 관계를 나타냅니다. 화살표는 호출·의존 방향이며 API 응답은 호출 경로의 역방향으로 반환됩니다.
 
 ```mermaid
 flowchart LR
@@ -124,9 +66,9 @@ flowchart LR
 
     subgraph APPLICATION["2. FastAPI 애플리케이션"]
         direction TB
+        APIS["API 경로<br/>health / data / summary<br/>chat / conversations"]
         ROUTERS["Router 계층<br/>health / study_data<br/>chat / conversations"]
-        APIS["주요 API<br/>/api/data / /api/data/summary<br/>/api/chat / /api/conversations"]
-        SERVICES["Service 계층<br/>학습기록 CRUD와 요약<br/>AI 코칭 / 대화 기록 관리"]
+        SERVICES["Service 계층<br/>study_data / chat<br/>conversation / firestore"]
         SUPPORT["공통 모듈<br/>Pydantic models<br/>config / firebase / exceptions"]
 
         APIS --> ROUTERS
@@ -147,87 +89,16 @@ flowchart LR
     APPLICATION -->|"프롬프트 / AI 답변"| OPENAI
 ```
 
-구조도 2는 왼쪽에서 오른쪽으로 `접속·배포 → FastAPI 애플리케이션 → 데이터·외부 서비스` 순서로 읽습니다. 세부 모듈을 세 묶음으로 압축해 지나치게 길어지는 문제를 줄였으며, API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면을 갱신합니다.
+구조도는 왼쪽에서 오른쪽으로 `접속·배포 → FastAPI 애플리케이션 → 데이터·외부 서비스` 순서로 읽습니다. 프론트엔드의 `app.js`가 Render API를 호출하고 Router가 요청을 구분한 뒤 Service가 비즈니스 로직과 외부 연동을 수행합니다.
 
-### 데이터 흐름도 DFD
+| Router | 주요 API | 연결 Service | 저장소·외부 연동 |
+| --- | --- | --- | --- |
+| `health` | `GET /`, `GET /api/health/firestore` | `firestore_service` | Firebase·Firestore 연결 확인 |
+| `study_data` | `GET·POST /api/data`, `PUT·DELETE /api/data/{document_id}`, `GET /api/data/summary` | `study_data_service`, `firestore_service` | Firestore `data` 컬렉션 |
+| `chat` | `POST /api/chat` | `chat_service`, `study_data_service`, `conversation_service` | Firestore 학습 데이터, OpenAI API, `conversations` 컬렉션 |
+| `conversations` | `GET·POST /api/conversations`, `GET·DELETE /api/conversations/{document_id}` | `conversation_service`, `firestore_service` | Firestore `conversations` 컬렉션 |
 
-```mermaid
-flowchart LR
-    subgraph ACCESS["1. 사용자 및 화면"]
-        direction TB
-        USER["외부 개체<br/>사용자"]
-        UI(("P1<br/>화면 및 입력 처리"))
-
-        USER -->|"학습시간 입력 / 목록 토글 / 질문"| UI
-        UI -->|"목록 / 요약 / 답변 표시"| USER
-    end
-
-    subgraph PROCESS["2. 백엔드 처리 프로세스"]
-        direction TB
-        STUDY(("P2<br/>학습기록 CRUD 및 요약"))
-        CHAT(("P3<br/>AI 학습 코칭"))
-        HISTORY(("P4<br/>대화 기록 관리"))
-    end
-
-    subgraph RESOURCE["3. 저장소 및 외부 서비스"]
-        direction TB
-        DATA[("D1<br/>Firestore data")]
-        OPENAI["외부 개체<br/>OpenAI API"]
-        CONV[("D2<br/>Firestore conversations")]
-    end
-
-    ACCESS -->|"CRUD / 요약 / 질문 / 대화 요청"| PROCESS
-    PROCESS -->|"데이터 변경 / AI 요청 / 대화 저장·조회"| RESOURCE
-    RESOURCE -->|"학습기록 / AI 답변 / 대화 기록"| PROCESS
-    PROCESS -->|"목록 / 요약 / 답변 / 처리 결과"| ACCESS
-```
-
-기본 DFD는 세 영역을 좌우로 배치한 장방형 요약도입니다. 바로 아래 DFD 2에서는 같은 흐름을 개별 요청과 응답 단위로 더 자세히 확인할 수 있습니다.
-
-### 데이터 흐름도 DFD 2 · 세로 배치 비교안
-
-기존 DFD와 같은 데이터 흐름을 위에서 아래로 읽을 수 있도록 다시 배치한 비교안입니다.
-
-```mermaid
-flowchart TB
-    USER["외부 개체<br/>사용자"]
-    UI(("P1<br/>화면 및 입력 처리"))
-
-    subgraph PROCESS["백엔드 처리 프로세스"]
-        direction TB
-        STUDY(("P2<br/>학습기록 CRUD 및 요약"))
-        CHAT(("P3<br/>AI 학습 코칭"))
-        HISTORY(("P4<br/>대화 기록 관리"))
-    end
-
-    subgraph RESOURCE["데이터 저장소 및 외부 서비스"]
-        direction TB
-        DATA[("D1<br/>Firestore data")]
-        OPENAI["외부 개체<br/>OpenAI API"]
-        CONV[("D2<br/>Firestore conversations")]
-    end
-
-    USER -->|"학습시간 입력 / 목록 토글 / 질문"| UI
-
-    UI -->|"CRUD 및 요약 요청"| STUDY
-    STUDY -->|"생성 / 조회 / 수정 / 삭제"| DATA
-    DATA -->|"학습기록"| STUDY
-    STUDY -->|"목록 / 요약 / 처리 결과"| UI
-
-    UI -->|"사용자 질문"| CHAT
-    DATA -->|"요약 통계와 최근 기록"| CHAT
-    CHAT -->|"학습 데이터와 질문"| OPENAI
-    OPENAI -->|"AI 답변"| CHAT
-    CHAT -->|"질문과 답변 자동 저장"| CONV
-    CHAT -->|"질문과 답변 표시"| UI
-
-    UI -->|"목록 / 상세 / 삭제 요청"| HISTORY
-    HISTORY -->|"조회 / 삭제"| CONV
-    CONV -->|"대화 기록"| HISTORY
-    HISTORY -->|"목록 / 상세 / 삭제 결과"| UI
-
-    UI -->|"화면 결과"| USER
-```
+프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 OpenAI 답변을 생성한 뒤 `conversation_service`로 질문·답변 한 쌍을 자동 저장합니다. `POST /api/conversations`는 Swagger 또는 별도 API 클라이언트에서 대화를 직접 저장할 때 사용하는 경로입니다.
 
 ### 화면 상태전이도
 
