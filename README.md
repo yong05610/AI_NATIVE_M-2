@@ -110,15 +110,15 @@ flowchart LR
 아래 구조도의 화살표는 호출·의존 방향을 나타냅니다. API 응답은 호출 경로의 역방향으로 반환됩니다.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph ACTOR["1. 사용자 및 개발자"]
-        direction TB
+        direction LR
         USER["서비스 사용자"]
         TESTER["개발자 / API 테스터"]
     end
 
     subgraph FRONT["2. Vercel 정적 프론트엔드"]
-        direction TB
+        direction LR
         HTML["index.html<br/>화면 구조와 접근성"]
         CSS["styles.css<br/>레이아웃과 UI 스타일"]
         JS["app.js<br/>화면 상태 / Fetch API / DOM 갱신"]
@@ -130,7 +130,7 @@ flowchart LR
     end
 
     subgraph ENTRY["3. Render FastAPI 진입 계층"]
-        direction TB
+        direction LR
         MAIN["main.py<br/>앱 생성 / Router 등록<br/>CORS / 예외 처리"]
         SWAGGER["Swagger UI<br/>GET /docs / OpenAPI"]
         MAIN -->|"OpenAPI 문서 제공"| SWAGGER
@@ -153,13 +153,13 @@ flowchart LR
     end
 
     subgraph SUPPORT["6. 공통 모듈"]
-        direction TB
+        direction LR
         MODELS["Pydantic models<br/>study_data / chat / conversation / common"]
         CORE["core<br/>config / firebase / exceptions"]
     end
 
     subgraph EXTERNAL["7. 외부 시스템 및 저장소"]
-        direction TB
+        direction LR
         DATA_DB[("Firestore<br/>data 컬렉션")]
         CONV_DB[("Firestore<br/>conversations 컬렉션")]
         OPENAI["OpenAI API<br/>AI 학습 코칭 답변 생성"]
@@ -196,7 +196,7 @@ flowchart LR
     OPENAI -->|"AI 답변"| CHAT_S
 ```
 
-구조도 2는 왼쪽에서 오른쪽으로 `사용자 → 프론트엔드 → FastAPI 진입점 → Router → Service → 외부 시스템` 순서로 읽습니다. API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면 상태와 목록·요약·대화 영역을 갱신합니다.
+구조도 2는 위에서 아래로 `사용자 → 프론트엔드 → FastAPI 진입점 → Router → Service → 공통 모듈·외부 시스템` 순서로 읽습니다. Router와 Service 노드를 세로로 쌓아 가로 폭을 줄였으며, API 응답은 호출 경로의 역방향으로 반환되어 `app.js`가 화면 상태와 목록·요약·대화 영역을 갱신합니다.
 
 ### 데이터 흐름도 DFD
 
@@ -229,6 +229,51 @@ flowchart LR
     CONV -->|대화 기록| HISTORY
     HISTORY -->|목록·상세·삭제 결과| UI
     UI -->|화면 결과| USER
+```
+
+### 데이터 흐름도 DFD 2 · 세로 배치 비교안
+
+기존 DFD와 같은 데이터 흐름을 위에서 아래로 읽을 수 있도록 다시 배치한 비교안입니다.
+
+```mermaid
+flowchart TB
+    USER["외부 개체<br/>사용자"]
+    UI(("P1<br/>화면 및 입력 처리"))
+
+    subgraph PROCESS["백엔드 처리 프로세스"]
+        direction TB
+        STUDY(("P2<br/>학습기록 CRUD 및 요약"))
+        CHAT(("P3<br/>AI 학습 코칭"))
+        HISTORY(("P4<br/>대화 기록 관리"))
+    end
+
+    subgraph RESOURCE["데이터 저장소 및 외부 서비스"]
+        direction TB
+        DATA[("D1<br/>Firestore data")]
+        OPENAI["외부 개체<br/>OpenAI API"]
+        CONV[("D2<br/>Firestore conversations")]
+    end
+
+    USER -->|"학습시간 입력 / 목록 토글 / 질문"| UI
+
+    UI -->|"CRUD 및 요약 요청"| STUDY
+    STUDY -->|"생성 / 조회 / 수정 / 삭제"| DATA
+    DATA -->|"학습기록"| STUDY
+    STUDY -->|"목록 / 요약 / 처리 결과"| UI
+
+    UI -->|"사용자 질문"| CHAT
+    DATA -->|"요약 통계와 최근 기록"| CHAT
+    CHAT -->|"학습 데이터와 질문"| OPENAI
+    OPENAI -->|"AI 답변"| CHAT
+    CHAT -->|"질문과 답변 자동 저장"| CONV
+    CHAT -->|"질문과 답변 표시"| UI
+
+    UI -->|"목록 / 상세 / 삭제 요청"| HISTORY
+    HISTORY -->|"조회 / 삭제"| CONV
+    CONV -->|"대화 기록"| HISTORY
+    HISTORY -->|"목록 / 상세 / 삭제 결과"| UI
+
+    UI -->|"화면 결과"| USER
 ```
 
 ### 화면 상태전이도
