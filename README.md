@@ -87,7 +87,11 @@ flowchart LR
     APPLICATION -->|"저장 / 조회"| DATA_DB
     APPLICATION -->|"대화 자동 저장"| CONV_DB
     APPLICATION -->|"프롬프트 / AI 답변"| OPENAI
+
+
+
 ```
+
 
 구조도는 왼쪽에서 오른쪽으로 `접속·배포 → FastAPI 애플리케이션 → 데이터·외부 서비스` 순서로 읽습니다. 프론트엔드의 `app.js`가 Render API를 호출하고 Router가 요청을 구분한 뒤 Service가 비즈니스 로직과 외부 연동을 수행합니다.
 
@@ -380,18 +384,21 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 ## 제출용 스크린샷
 
 
+<<<<<<< HEAD
 - 학습시간 등록 화면
 
  ![학습 등록 화면](images/screenshot171221.png)
+=======
+
+- 학습시간 등록 화면
+
+ ![학습 등록 화면](images/스크린샷2026-10-07%20171221.png)
+>>>>>>> 82ce5fd402a7d98c5974e674e97b201e5effbeef
 
 
 - 데이터 요약과 질문·답변이 보이는 AI 채팅 화면( 이전대화 불러오기 포함)
 
- ![AI 채팅 화면](images/screenshot171458.png)
 
-- 학습 이력 data 및 data편집 화면
-
- ![학습 이력 data 및 data편집 화면](images/screenshot171532.png)
 
 ## 보안 주의사항
 
@@ -400,6 +407,7 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 - OpenAI API 키와 Firebase 인증정보는 백엔드 환경변수로만 관리합니다.
 - `.env` 파일은 Git 추적 대상에서 제외합니다.
 - 배포 환경에서는 `FRONTEND_ORIGIN`을 실제 프론트엔드 주소로 설정해 CORS 허용 범위를 제한합니다.
+
 
 ## 현재 검증 상태 요약
 
