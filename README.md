@@ -87,7 +87,11 @@ flowchart LR
     APPLICATION -->|"저장 / 조회"| DATA_DB
     APPLICATION -->|"대화 자동 저장"| CONV_DB
     APPLICATION -->|"프롬프트 / AI 답변"| OPENAI
+
+
+
 ```
+
 
 구조도는 왼쪽에서 오른쪽으로 `접속·배포 → FastAPI 애플리케이션 → 데이터·외부 서비스` 순서로 읽습니다. 프론트엔드의 `app.js`가 Render API를 호출하고 Router가 요청을 구분한 뒤 Service가 비즈니스 로직과 외부 연동을 수행합니다.
 
