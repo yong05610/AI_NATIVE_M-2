@@ -390,7 +390,7 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 
 - 데이터 요약과 질문·답변이 보이는 AI 채팅 화면( 이전대화 불러오기 포함)
 
- ![ AI 채팅 화면](images/screenshot171458.png)
+ ![ AI 채팅 화면](images/sceernshot171458.png)
 ======
 
 - 학습DATA 편집 화면
