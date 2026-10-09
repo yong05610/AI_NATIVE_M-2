@@ -145,6 +145,29 @@ sequenceDiagram
     deactivate B
     F-->>U: Display the answer and refresh conversation history
 ```
+### AI 학습 데이터 기반 답변 메커니즘 (RAG)
+
+본 서비스는 사용자의 질문 시점에 Firestore의 학습 데이터를 조회하여 프롬프트에 주입하는 RAG(Retrieval-Augmented Generation) 방식을 채택하고 있습니다.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend (FastAPI)
+    participant DB as Firestore
+    participant AI as OpenAI API
+
+    U->>F: Ask question
+    F->>B: POST /api/chat (question)
+    B->>DB: Fetch recent study data
+    DB-->>B: Return study data
+    B->>B: Assemble prompt (System + Data + Question)
+    B->>AI: Send prompt
+    AI-->>B: Return AI responsegit
+    B->>DB: Save conversation (Q&A)
+    B-->>F: Return response
+    F-->>U: Display AI answer
+
 
 ### 화면 상태전이도
 
