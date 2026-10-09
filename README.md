@@ -376,10 +376,22 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 - Vercel CLI 로컬 메타데이터: `frontend/.gitignore`의 `.vercel` 규칙으로 Git 추적 제외
 - CORS: Vercel Origin의 GET·POST 프리플라이트가 HTTP 200이며 `Access-Control-Allow-Origin`이 실제 Vercel Origin과 일치
 
-최종 완료 전에는 다음 작업이 남아 있습니다.
 
-- 새 학습기록 목록 토글을 실제 브라우저에서 클릭·키보드로 최종 확인
-- 대화 기록 상세·삭제 동작 최종 확인
+## 🚀 배포 결과
+- **서비스 URL:** [https://ai-native-m-2.onrender.com](https://ai-native-m-2.onrender.com)
+- **API 문서 (Swagger):** [https://ai-native-m-2.onrender.com/docs](https://ai-native-m-2.onrender.com/docs)
+
+### 실행 증거
+1. **메인 페이지 응답:**
+![배포 성공 화면](images/screenshot1.png)
+
+*(서버가 정상적으로 JSON 데이터를 반환함)*
+
+2. **Swagger UI 접속:**
+
+![Swagger 문서 화면](images/screenshot2.png)
+
+*(API 문서를 통해 엔드포인트 테스트 가능)*
 
 ## 제출용 스크린샷
 
@@ -405,6 +417,14 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 - OpenAI API 키와 Firebase 인증정보는 백엔드 환경변수로만 관리합니다.
 - `.env` 파일은 Git 추적 대상에서 제외합니다.
 - 배포 환경에서는 `FRONTEND_ORIGIN`을 실제 프론트엔드 주소로 설정해 CORS 허용 범위를 제한합니다.
+
+## 시스템 메시지 설계 의도
+본 서비스는 `SYSTEM_MESSAGE`를 통해 AI의 역할을 '학습 코치'로 고정하였습니다.
+- **기대 효과:** 사용자의 학습 데이터를 분석할 때 일관된 페르소나를 유지하여 전문적인 피드백을 제공합니다.
+- **위험 요소 및 관리:**
+  - **토큰 비용:** 시스템 메시지가 길어질수록 매 요청마다 토큰이 소모되므로 간결하게 유지합니다.
+  - **민감 데이터:** 사용자의 개인정보가 포함된 학습 데이터가 프롬프트에 노출되지 않도록 주의하며, 보안 정책을 준수합니다.
+
 
 
 ## 현재 검증 상태 요약
