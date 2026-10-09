@@ -27,7 +27,7 @@ HTML, CSS, Vanilla JavaScript 기반 정적 화면에서 학습시간과 대화�
 ## 개념
 
 
-![AI학습 비서](immages/AI학습시간분석비서.png)
+![AI학습 비서](images/AI학습시간분석비서.png)
 
 
 ## 프로젝트 구조
