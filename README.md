@@ -104,9 +104,10 @@ flowchart LR
 
 프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 OpenAI 답변을 생성한 뒤 `conversation_service`로 질문·답변 한 쌍을 자동 저장합니다. `POST /api/conversations`는 Swagger 또는 별도 API 클라이언트에서 대화를 직접 저장할 때 사용하는 경로입니다.
 
-### Learning Data-Based AI Response Generation (RAG)
 
-The following sequence shows how the service retrieves learning data, augments the prompt, generates an AI response, and stores the conversation.
+### Learning Data-Based AI Response Generation _AI 학습 데이터베이스 기반 답변 메커니즘)(RAG)
+
+본 서비스는 사용자의 질문 시점에 Firestore의 학습 데이터를 조회하여 프롬프트에 주입하는 RAG(Retrieval-Augmented Generation) 방식을 채택하고 있습니다.
 
 ```mermaid
 sequenceDiagram
@@ -145,34 +146,12 @@ sequenceDiagram
     deactivate B
     F-->>U: Display the answer and refresh conversation history
 ```
-### AI 학습 데이터 기반 답변 메커니즘 (RAG)
-
-본 서비스는 사용자의 질문 시점에 Firestore의 학습 데이터를 조회하여 프롬프트에 주입하는 RAG(Retrieval-Augmented Generation) 방식을 채택하고 있습니다.
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant B as Backend (FastAPI)
-    participant DB as Firestore
-    participant AI as OpenAI API
-
-    U->>F: Ask question
-    F->>B: POST /api/chat (question)
-    B->>DB: Fetch recent study data
-    DB-->>B: Return study data
-    B->>B: Assemble prompt (System + Data + Question)
-    B->>AI: Send prompt
-    AI-->>B: Return AI responsegit
-    B->>DB: Save conversation (Q&A)
-    B-->>F: Return response
-    F-->>U: Display AI answer
     
-```
 
 ### 화면 상태전이도
 
 ```mermaid
+
 stateDiagram-v2
     [*] --> 초기로딩
     초기로딩 --> 요약표시_목록숨김: 요약·대화 목록 조회 완료
@@ -204,6 +183,7 @@ stateDiagram-v2
     AI답변표시 --> 대화삭제중: 대화 삭제 확인
     대화삭제중 --> 요약표시_목록숨김: 삭제 성공·목록 갱신
     AI오류 --> AI응답대기: 질문 재전송
+    
 ```
 
 상태전이도에서 학습기록 목록은 초기 화면에 표시되지 않습니다. 전체 기록 수 카드를 선택할 때마다 최신 목록을 다시 조회하며, 목록이 열린 상태의 등록·수정·삭제 후에는 목록과 요약을 함께 갱신합니다.
@@ -448,7 +428,9 @@ Render 백엔드와 Vercel 프론트엔드 배포가 완료되었으며, 실제 
 - **API 문서 (Swagger):** [https://ai-native-m-2.onrender.com/docs](https://ai-native-m-2.onrender.com/docs)
 
 ### 실행 증거
+
 1. **메인 페이지 응답:**
+
 ![배포 성공 화면](images/screenshot1.png)
 
 *(서버가 정상적으로 JSON 데이터를 반환함)*
