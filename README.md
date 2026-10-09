@@ -104,6 +104,48 @@ flowchart LR
 
 프론트엔드의 AI 질문 흐름은 `POST /api/chat`만 호출합니다. `chat_service`가 최신 학습기록과 통계를 조회하고 OpenAI 답변을 생성한 뒤 `conversation_service`로 질문·답변 한 쌍을 자동 저장합니다. `POST /api/conversations`는 Swagger 또는 별도 API 클라이언트에서 대화를 직접 저장할 때 사용하는 경로입니다.
 
+### Learning Data-Based AI Response Generation (RAG)
+
+The following sequence shows how the service retrieves learning data, augments the prompt, generates an AI response, and stores the conversation.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant B as Backend (FastAPI)
+    participant DB as Firestore
+    participant AI as OpenAI
+
+    U->>F: Enter a learning-related question
+    F->>B: POST /api/chat with the user message
+    activate B
+
+    Note over B,DB: Retrieval phase
+    B->>DB: Query recent learning records
+    activate DB
+    DB-->>B: Return learning records
+    deactivate DB
+
+    B->>B: Calculate the learning summary
+    B->>B: Combine system message, learning data, and user question
+
+    Note over B,AI: Augmented generation phase
+    B->>AI: Send the assembled prompt
+    activate AI
+    AI-->>B: Return the generated answer
+    deactivate AI
+
+    B->>DB: Save question, answer, and timestamp to conversations
+    activate DB
+    DB-->>B: Return the saved conversation
+    deactivate DB
+
+    B-->>F: Return 200 OK with the final answer
+    deactivate B
+    F-->>U: Display the answer and refresh conversation history
+```
+
 ### 화면 상태전이도
 
 ```mermaid
