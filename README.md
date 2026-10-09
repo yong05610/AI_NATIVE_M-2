@@ -167,7 +167,8 @@ sequenceDiagram
     B->>DB: Save conversation (Q&A)
     B-->>F: Return response
     F-->>U: Display AI answer
-
+    
+```
 
 ### 화면 상태전이도
 
